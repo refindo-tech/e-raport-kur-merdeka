@@ -26,7 +26,9 @@ return new class extends Migration
             $table->string('website')->nullable();
             $table->string('namakepsek')->nullable();
             $table->string('nipkepsek')->nullable();
-            $table->text('logo')->default('logosekolah.png');
+            // $table->text('logo')->default('logosekolah.png');
+            // $table->text('logo');
+            $table->string('logo')->default('logosekolah.png');
             $table->timestamps();
         });
     }

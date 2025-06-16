@@ -18,7 +18,9 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('email')->unique()->nullable();
             $table->string('password');
-            $table->text('foto')->default('profile.jpg');
+            // $table->text('foto')->default('profile.jpg');
+            // $table->text('foto');
+            $table->string('foto')->default('profile.jpg');
             $table->enum('role', ['admin', 'guru', 'siswa']);
             $table->boolean('is_aktif')->default(true);
             $table->boolean('dark_mode')->default(false);
