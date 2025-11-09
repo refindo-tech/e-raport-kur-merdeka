@@ -17,6 +17,7 @@ use App\Http\Controllers\KelasController;
 use App\Http\Controllers\KelompokController;
 use App\Http\Controllers\KelompokMapelController;
 use App\Http\Controllers\KetidakhadiranController;
+use App\Http\Controllers\KokurikulerController;
 use App\Http\Controllers\LegerNilaiController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogoutController;
@@ -90,6 +91,7 @@ Route::middleware('auth')->group(function(){
   Route::resource('/pembelajaran', PembelajaranController::class);
   Route::resource('/ketidakhadiran', KetidakhadiranController::class)->middleware('can:walikelas');
   Route::resource('/catatanwalas', CatatanWalasController::class)->middleware('can:walikelas');
+  Route::resource('/kokurikuler', KokurikulerController::class)->middleware('can:walikelas');
   Route::resource('/ekskul', EkskulController::class);
 
 Route::middleware('can:pembinaekskul')->group(function(){

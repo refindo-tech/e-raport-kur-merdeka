@@ -3,12 +3,14 @@
 <li class="nav-item {{ Request::is('kelas*') |
   Request::is('siswa*') |
   Request::is('ketidakhadiran*') |
-  Request::is('catatanwalas*')
+  Request::is('catatanwalas*') |
+  Request::is('kokurikuler*')
   ? 'menu-open' : '' }}">
       <a href="#" class="nav-link {{ Request::is('kelas*') |
       Request::is('siswa*') |
       Request::is('ketidakhadiran*') |
-      Request::is('catatanwalas*')
+      Request::is('catatanwalas*') |
+      Request::is('kokurikuler*')
       ? 'active' : '' }}">
         <i class="nav-icon fas fa-columns"></i>
         <p>
@@ -33,6 +35,12 @@
           <a href="{{ route('catatanwalas.index') }}" class="nav-link {{ Request::is('catatanwalas*') ? 'active' : '' }}">
               <i class="far fa-circle nav-icon"></i>
               <p>Catatan Walas</p>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ route('kokurikuler.index') }}" class="nav-link {{ Request::is('kokurikuler*') ? 'active' : '' }}">
+              <i class="far fa-circle nav-icon"></i>
+              <p>Kokurikuler</p>
           </a>
         </li>
     </ul>

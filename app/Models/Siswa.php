@@ -50,6 +50,10 @@ class Siswa extends Model
       return $this->hasMany(CatatanProjek::class);
     }
 
+    public function studentKokurikuler(){
+      return $this->hasMany(StudentKokurikuler::class, 'student_id');
+    }
+
     public function aktif(){
       return $this->whereHas('user', fn($q) => $q->where('is_aktif', 1));
     }

@@ -215,6 +215,34 @@ use Carbon\Carbon;
       <br>
       
       <table cellspacing="0">
+        <!-- Kokurikuler -->
+        <tr>
+          <td colspan="4" style="height: 25px; padding-top: 5px"><strong>KOKURIKULER</strong></td>
+        </tr>
+        <tr class="sikap">
+          <td colspan="4" class="description" style="padding: 10px;">
+            @if ($studentKokurikuler->count() > 0)
+              @php
+                $kokurikulerByDimension = $studentKokurikuler->groupBy(function($item) {
+                  return $item->subdimension->dimension->name;
+                });
+              @endphp
+              @foreach ($kokurikulerByDimension as $dimensionName => $kokurikulerItems)
+                <strong>{{ $dimensionName }}:</strong><br>
+                @foreach ($kokurikulerItems as $kok)
+                  &nbsp;&nbsp;• {{ $kok->description }}<br>
+                @endforeach
+                <br>
+              @endforeach
+            @endif
+          </td>
+        </tr>
+        <!-- End Kokurikuler -->
+      </table>
+      
+      <br>
+      
+      <table cellspacing="0">
         <!-- Catatan Wali Kelas -->
         <tr>
           <td colspan="4" style="height: 25px; padding-top: 5px"><strong>CATATAN WALI KELAS</strong></td>
