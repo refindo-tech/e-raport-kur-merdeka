@@ -42,6 +42,14 @@ class Kelas extends Model
       return $this->hasMany(StudentKokurikuler::class, 'class_id');
     }
 
+    public function kokurikulerLevels(){
+      return $this->hasMany(StudentKokurikulerLevel::class, 'class_id');
+    }
+
+    public function kokurikulerDescriptions(){
+      return $this->hasMany(StudentKokurikulerDescription::class, 'class_id');
+    }
+
     // HELPER
     public function wali_kelas(){
       return ($this->guru) ? $this->guru->name : '-';

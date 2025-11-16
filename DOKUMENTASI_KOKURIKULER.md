@@ -17,7 +17,7 @@ By: Abdul Majid Refindo
 
 ## Pengenalan
 
-Modul Kokurikuler adalah fitur yang memungkinkan Wali Kelas untuk menilai perkembangan kompetensi siswa berdasarkan Alur Perkembangan Kompetensi (APK). Modul ini mengintegrasikan 8 dimensi kompetensi yang menjadi bagian dari Kurikulum Merdeka.
+Modul Kokurikuler adalah fitur yang memungkinkan Wali Kelas menilai perkembangan peserta didik pada 8 dimensi Profil Pelajar Pancasila. Sistem disederhanakan menjadi 2 level penilaian per dimensi: **Nilai Tinggi** dan **Nilai Rendah**, dengan deskripsi otomatis berbasis template yang tetap bisa diedit manual per siswa.
 
 ### Tujuan Modul Kokurikuler
 - Menilai perkembangan kompetensi siswa di luar pembelajaran intrakurikuler
@@ -57,7 +57,7 @@ Modul ini mencakup 8 dimensi kompetensi:
 - **Wali Kelas** - Nama wali kelas
 - **Tingkat** - Tingkat kelas (1-12)
 - **Jumlah Siswa** - Jumlah siswa aktif di kelas
-- **Aksi** - Tombol "Kelola" untuk mengelola kokurikuler
+- **Aksi** - Tombol "Kelola" untuk masuk ke halaman pengisian per kelas
 
 ### Filter Data
 1. Klik tombol **Filter Data** di pojok kanan atas
@@ -71,58 +71,58 @@ Modul ini mencakup 8 dimensi kompetensi:
 ### Langkah-langkah Mengisi Data
 
 #### 1. Membuka Halaman Kelola Kokurikuler
-1. Di halaman index kokurikuler, klik tombol **Kelola** pada kelas yang ingin dikelola
-2. Anda akan masuk ke halaman detail kokurikuler untuk kelas tersebut
+1. Di halaman index kokurikuler, klik tombol **Kelola** pada kelas yang ingin dikelola.
+2. Di bagian atas halaman, tersedia:
+   - Tombol **Kelola Dimensi Profil Lulusan** untuk mengubah nama/uraian dimensi.
+   - Tombol **Edit Deskripsi Nilai** untuk mengubah template deskripsi Nilai Tinggi/Rendah.
 
 #### 2. Mengisi Kokurikuler untuk Setiap Siswa
-1. Di halaman detail, Anda akan melihat daftar siswa dalam kelas
-2. Untuk setiap siswa, klik tombol **Kelola Kokurikuler**
-3. Modal akan muncul dengan form untuk memilih level kokurikuler
+1. Pada tabel siswa tersedia dua kolom:
+   - **Nilai Tinggi**: daftar checkbox 8 dimensi.
+   - **Nilai Rendah & Deskripsi**: daftar checkbox 8 dimensi dan textarea deskripsi akhir.
+2. Centang dimensi pada kolom yang sesuai. Untuk satu dimensi, hanya salah satu yang dapat dipilih (mutually exclusive).
+3. Sunting teks pada textarea deskripsi bila diperlukan.
 
-#### 3. Memilih Level Kokurikuler
-1. Di modal, Anda akan melihat 8 dimensi kompetensi
-2. Setiap dimensi memiliki beberapa subdimensi
-3. Untuk setiap subdimensi, pilih level yang sesuai:
-   - **Berkembang** - Siswa masih dalam tahap awal perkembangan
-   - **Cakap** - Siswa sudah menunjukkan kemampuan yang baik
-   - **Mahir** - Siswa sudah menunjukkan kemampuan yang sangat baik
-4. Atau biarkan kosong jika belum perlu dinilai
+#### 3. Level Penilaian
+Hanya ada dua level per dimensi:
+- **Nilai Tinggi**: dimensi menonjol/kuat pada siswa.
+- **Nilai Rendah**: dimensi masih membutuhkan penguatan.
 
 #### 4. Menyimpan Data
-1. Setelah memilih level untuk semua subdimensi yang diperlukan
-2. Klik tombol **Simpan**
-3. Sistem akan secara otomatis menghasilkan deskripsi untuk setiap kokurikuler yang dipilih
-4. Data akan tersimpan dan muncul di halaman detail
+- Perubahan checkbox disimpan otomatis.
+- Perubahan deskripsi disimpan dengan menekan tombol **Simpan Deskripsi**.
 
 ### Format Deskripsi Otomatis
-Sistem akan secara otomatis menghasilkan deskripsi dengan format:
-- **Berkembang**: "Ananda [nama siswa] masih perlu berlatih dalam [deskripsi subdimensi]"
-- **Cakap**: "Ananda [nama siswa] sudah baik dalam [deskripsi subdimensi]"
-- **Mahir**: "Ananda [nama siswa] sudah sangat baik dalam [deskripsi subdimensi]"
+Deskripsi akhir dibangkitkan dari dua template yang dapat diedit pada tombol **Edit Deskripsi Nilai**:
+- Template **Nilai Tinggi**
+- Template **Nilai Rendah**
+
+Template mendukung placeholder:
+- `{{ student_name }}` → nama siswa
+- `{{ list_of_descriptions }}` → daftar dimensi yang dipilih (dipisah koma, dengan “dan” di akhir)
+
+Contoh default:
+- Nilai Tinggi: “Ananda {{ student_name }} sudah baik dalam {{ list_of_descriptions }}.”
+- Nilai Rendah: “Ananda {{ student_name }} perlu bantuan dalam {{ list_of_descriptions }}.”
+
+Jika keduanya diisi, sistem akan menggabungkan menjadi satu paragraf pada kolom deskripsi dan dapat Anda sunting secara manual.
 
 ### Contoh Pengisian
-**Contoh 1: Siswa dengan Kemampuan Baik di Kreativitas**
-- Dimensi: **Kreativitas**
-- Subdimensi: **Kemampuan Berpikir Kreatif**
-- Level: **Cakap**
-- Deskripsi yang dihasilkan: "Ananda Budi sudah baik dalam menghasilkan ide-ide yang bervariasi dan menarik"
+**Contoh 1: Nilai Tinggi pada Kreativitas dan Komunikasi**
+- Centang “Kreativitas” dan “Komunikasi” di kolom Nilai Tinggi.
+- Deskripsi otomatis: “Ananda Budi sudah baik dalam kreativitas dan komunikasi.”
 
-**Contoh 2: Siswa yang Masih Perlu Latihan di Kolaborasi**
-- Dimensi: **Kolaborasi**
-- Subdimensi: **Kemampuan Bekerja Sama**
-- Level: **Berkembang**
-- Deskripsi yang dihasilkan: "Ananda Siti masih perlu berlatih dalam bekerja sama dalam kelompok dengan bimbingan"
+**Contoh 2: Nilai Rendah pada Kolaborasi**
+- Centang “Kolaborasi” di kolom Nilai Rendah.
+- Deskripsi otomatis: “Ananda Siti perlu bantuan dalam kolaborasi.”
 
 ### Mengedit Data Kokurikuler
-1. Klik tombol **Kelola Kokurikuler** pada siswa yang ingin diedit
-2. Ubah level yang ingin diubah
-3. Klik **Simpan** untuk menyimpan perubahan
+- Ubah centang pada kolom **Nilai Tinggi/Rendah** (tersimpan otomatis).
+- Sunting teks deskripsi lalu klik **Simpan Deskripsi**.
 
 ### Menghapus Data Kokurikuler
-1. Klik tombol **Kelola Kokurikuler** pada siswa yang ingin dihapus
-2. Hapus pilihan level (biarkan kosong) pada subdimensi yang ingin dihapus
-3. Klik **Simpan** untuk menyimpan perubahan
-4. Data kokurikuler yang tidak dipilih akan otomatis dihapus
+- Hilangkan semua centang pada kedua kolom.
+- Kosongkan teks deskripsi lalu klik **Simpan Deskripsi** (opsional).
 
 ---
 
@@ -132,21 +132,14 @@ Sistem akan secara otomatis menghasilkan deskripsi dengan format:
 Data kokurikuler akan muncul di **Rapor Semester** pada halaman kedua, setelah section **Ekstrakurikuler** dan sebelum section **Catatan Wali Kelas**.
 
 ### Format Tampilan di Rapor
-Data kokurikuler ditampilkan dengan format:
+Data kokurikuler ditampilkan sebagai satu paragraf deskripsi gabungan:
 - **Judul**: "KOKURIKULER"
-- **Isi**: Deskripsi kokurikuler yang dikelompokkan berdasarkan dimensi
-- Setiap dimensi ditampilkan dengan judul dimensi diikuti daftar deskripsi
+- **Isi**: Deskripsi akhir dari halaman pengisian (kolom “Nilai Rendah & Deskripsi”).
 
 ### Contoh Tampilan di Rapor
 ```
 KOKURIKULER
-
-Kreativitas:
-  • Ananda Budi sudah baik dalam menghasilkan ide-ide yang bervariasi dan menarik
-  • Ananda Budi sudah sangat baik dalam menciptakan karya yang inovatif, orisinal, dan bermakna
-
-Kolaborasi:
-  • Ananda Budi sudah baik dalam bekerja sama dalam kelompok secara efektif
+Ananda Budi sudah baik dalam kreativitas dan komunikasi. Ananda Budi perlu bantuan dalam kolaborasi.
 ```
 
 ### Mencetak Rapor dengan Kokurikuler
@@ -157,117 +150,24 @@ Kolaborasi:
 5. Rapor akan dicetak dengan section kokurikuler yang sudah diisi
 
 ### Catatan Penting
-- Data kokurikuler hanya akan muncul di rapor jika sudah diisi
-- Data kokurikuler dikelompokkan berdasarkan dimensi untuk memudahkan pembacaan
-- Deskripsi yang muncul adalah deskripsi yang sudah dihasilkan otomatis oleh sistem
+- Data kokurikuler hanya akan muncul di rapor jika sudah diisi.
+- Deskripsi di rapor mengikuti teks pada field “Deskripsi” di halaman pengisian.
+- Template dapat disesuaikan melalui tombol **Edit Deskripsi Nilai**.
 
 ---
 
 ## Penjelasan Dimensi dan Level
 
-### 1. Keimanan
-**Deskripsi**: Kemampuan memahami, menghayati, dan mengamalkan ajaran agama
+### Daftar Dimensi
+Modul menggunakan 8 dimensi Profil Pelajar Pancasila:
+1) Keimanan  2) Kewargaan  3) Penalaran Kritis  4) Kreativitas  5) Kolaborasi  6) Kemandirian  7) Kesehatan  8) Komunikasi.
 
-**Subdimensi**:
-- **Pemahaman Ajaran Agama**
-  - Berkembang: memahami ajaran agama secara dasar
-  - Cakap: memahami dan menghayati ajaran agama dengan baik
-  - Mahir: memahami, menghayati, dan mengamalkan ajaran agama secara konsisten
-- **Pengamalan Ibadah**
-  - Berkembang: melakukan ibadah dengan bimbingan
-  - Cakap: melakukan ibadah secara mandiri dan teratur
-  - Mahir: melakukan ibadah dengan kesadaran penuh dan konsisten
+### Level Penilaian
+Hanya ada dua level:
+- **Nilai Tinggi**: dimensi menonjol/kuat pada siswa.
+- **Nilai Rendah**: dimensi membutuhkan penguatan/pembinaan.
 
-### 2. Kewargaan
-**Deskripsi**: Kemampuan memahami hak dan kewajiban sebagai warga negara
-
-**Subdimensi**:
-- **Rasa Cinta Tanah Air**
-  - Berkembang: menunjukkan rasa cinta tanah air secara sederhana
-  - Cakap: menunjukkan rasa cinta tanah air melalui tindakan nyata
-  - Mahir: menunjukkan rasa cinta tanah air yang kuat dan konsisten
-- **Kesadaran Berbangsa dan Bernegara**
-  - Berkembang: memahami identitas sebagai bagian dari bangsa
-  - Cakap: menunjukkan kesadaran berbangsa dan bernegara dalam kehidupan sehari-hari
-  - Mahir: menunjukkan kesadaran berbangsa dan bernegara yang tinggi dan konsisten
-
-### 3. Penalaran Kritis
-**Deskripsi**: Kemampuan berpikir kritis dan logis dalam menyelesaikan masalah
-
-**Subdimensi**:
-- **Kemampuan Analisis**
-  - Berkembang: menganalisis informasi secara sederhana
-  - Cakap: menganalisis informasi dengan baik dan sistematis
-  - Mahir: menganalisis informasi secara mendalam dan kritis
-- **Kemampuan Menyelesaikan Masalah**
-  - Berkembang: menyelesaikan masalah sederhana dengan bimbingan
-  - Cakap: menyelesaikan masalah secara mandiri dan sistematis
-  - Mahir: menyelesaikan masalah kompleks dengan solusi yang kreatif dan efektif
-
-### 4. Kreativitas
-**Deskripsi**: Kemampuan menciptakan ide-ide baru dan inovatif
-
-**Subdimensi**:
-- **Kemampuan Berpikir Kreatif**
-  - Berkembang: menghasilkan ide-ide sederhana
-  - Cakap: menghasilkan ide-ide yang bervariasi dan menarik
-  - Mahir: menghasilkan ide-ide inovatif dan orisinal
-- **Kemampuan Menciptakan Karya**
-  - Berkembang: menciptakan karya sederhana dengan bimbingan
-  - Cakap: menciptakan karya yang menarik dan bermakna
-  - Mahir: menciptakan karya yang inovatif, orisinal, dan bermakna
-
-### 5. Kolaborasi
-**Deskripsi**: Kemampuan bekerja sama dalam tim
-
-**Subdimensi**:
-- **Kemampuan Bekerja Sama**
-  - Berkembang: bekerja sama dalam kelompok dengan bimbingan
-  - Cakap: bekerja sama dalam kelompok secara efektif
-  - Mahir: bekerja sama dalam kelompok dengan kepemimpinan yang baik
-- **Kemampuan Berkomunikasi dalam Tim**
-  - Berkembang: berkomunikasi dalam tim secara sederhana
-  - Cakap: berkomunikasi dalam tim dengan baik dan efektif
-  - Mahir: berkomunikasi dalam tim dengan sangat baik dan memfasilitasi kolaborasi
-
-### 6. Kemandirian
-**Deskripsi**: Kemampuan bekerja mandiri dan bertanggung jawab
-
-**Subdimensi**:
-- **Kemampuan Bekerja Mandiri**
-  - Berkembang: bekerja mandiri dengan pengawasan
-  - Cakap: bekerja mandiri dengan baik dan terorganisir
-  - Mahir: bekerja mandiri dengan disiplin tinggi dan hasil yang maksimal
-- **Tanggung Jawab**
-  - Berkembang: menunjukkan tanggung jawab terhadap tugas yang diberikan
-  - Cakap: menunjukkan tanggung jawab yang tinggi terhadap tugas dan komitmen
-  - Mahir: menunjukkan tanggung jawab yang sangat tinggi dan konsisten
-
-### 7. Kesehatan
-**Deskripsi**: Kemampuan menjaga kesehatan fisik dan mental
-
-**Subdimensi**:
-- **Kesehatan Fisik**
-  - Berkembang: memahami pentingnya menjaga kesehatan fisik
-  - Cakap: menjaga kesehatan fisik dengan baik dan teratur
-  - Mahir: menjaga kesehatan fisik dengan sangat baik dan menjadi contoh
-- **Kesehatan Mental**
-  - Berkembang: memahami pentingnya menjaga kesehatan mental
-  - Cakap: menjaga kesehatan mental dengan baik
-  - Mahir: menjaga kesehatan mental dengan sangat baik dan membantu orang lain
-
-### 8. Komunikasi
-**Deskripsi**: Kemampuan berkomunikasi secara efektif
-
-**Subdimensi**:
-- **Kemampuan Berbicara**
-  - Berkembang: berbicara dengan jelas dan sederhana
-  - Cakap: berbicara dengan jelas, lancar, dan menarik
-  - Mahir: berbicara dengan sangat jelas, lancar, menarik, dan persuasif
-- **Kemampuan Menulis**
-  - Berkembang: menulis dengan struktur yang sederhana
-  - Cakap: menulis dengan struktur yang baik dan jelas
-  - Mahir: menulis dengan struktur yang sangat baik, jelas, dan menarik
+Catatan: Detail indikator dapat dituangkan pada teks deskripsi atau disesuaikan melalui template.
 
 ---
 
@@ -311,22 +211,22 @@ Kolaborasi:
 **A**: Tidak. Data kokurikuler bersifat opsional. Anda dapat mengisi data kokurikuler hanya untuk siswa yang sudah dinilai. Data kokurikuler hanya akan muncul di rapor jika sudah diisi.
 
 ### Q: Bisakah saya mengubah data kokurikuler setelah disimpan?
-**A**: Ya. Anda dapat mengubah data kokurikuler kapan saja dengan membuka modal "Kelola Kokurikuler" dan mengubah level yang dipilih.
+**A**: Ya. Ubah centang pada tabel (tersimpan otomatis) atau sunting deskripsi lalu klik **Simpan Deskripsi**.
 
 ### Q: Apakah data kokurikuler berbeda untuk setiap semester?
 **A**: Ya. Data kokurikuler terikat pada tahun pelajaran (tapel) dan semester. Setiap semester, Anda perlu mengisi data kokurikuler baru untuk siswa.
 
-### Q: Bagaimana jika saya tidak memilih level untuk subdimensi tertentu?
-**A**: Subdimensi yang tidak dipilih level-nya tidak akan muncul di rapor. Anda dapat memilih level nanti jika diperlukan.
+### Q: Bagaimana jika saya tidak memilih level untuk sebuah dimensi?
+**A**: Dimensi yang tidak dipilih tidak akan muncul pada deskripsi rapor. Anda bisa memilihnya kapan saja.
 
 ### Q: Bisakah saya menghapus data kokurikuler?
-**A**: Ya. Untuk menghapus data kokurikuler, buka modal "Kelola Kokurikuler", hapus pilihan level (biarkan kosong), dan klik Simpan.
+**A**: Ya. Hilangkan semua centang pada kedua kolom dan kosongkan deskripsi lalu klik **Simpan Deskripsi**.
 
 ### Q: Apakah deskripsi kokurikuler dapat diubah secara manual?
-**A**: Tidak. Deskripsi kokurikuler dihasilkan secara otomatis oleh sistem berdasarkan level yang dipilih. Ini memastikan konsistensi format deskripsi di semua rapor.
+**A**: Ya. Deskripsi akhir dapat diedit per siswa. Sistem tetap membangkitkan deskripsi awal dari template.
 
-### Q: Bagaimana jika saya ingin menambahkan dimensi atau subdimensi baru?
-**A**: Penambahan dimensi atau subdimensi baru harus dilakukan oleh Administrator sistem melalui database. Hubungi administrator jika diperlukan.
+### Q: Bagaimana jika saya ingin mengubah/menambah nama dimensi?
+**A**: Gunakan tombol **Kelola Dimensi Profil Lulusan**. Perubahan mempengaruhi daftar checkbox pada tabel.
 
 ### Q: Apakah data kokurikuler dapat diekspor?
 **A**: Saat ini, data kokurikuler hanya dapat dilihat melalui sistem dan dicetak melalui rapor. Fitur ekspor data dapat ditambahkan di versi selanjutnya.

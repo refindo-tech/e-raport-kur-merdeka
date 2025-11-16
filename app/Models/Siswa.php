@@ -54,6 +54,14 @@ class Siswa extends Model
       return $this->hasMany(StudentKokurikuler::class, 'student_id');
     }
 
+    public function kokurikulerLevels(){
+      return $this->hasMany(StudentKokurikulerLevel::class, 'student_id');
+    }
+
+    public function kokurikulerDescriptions(){
+      return $this->hasMany(StudentKokurikulerDescription::class, 'student_id');
+    }
+
     public function aktif(){
       return $this->whereHas('user', fn($q) => $q->where('is_aktif', 1));
     }

@@ -15,7 +15,7 @@ use App\Models\Pembelajaran;
 use App\Models\Projek;
 use App\Models\Sekolah;
 use App\Models\Siswa;
-use App\Models\StudentKokurikuler;
+use App\Models\StudentKokurikulerDescription;
 use App\Models\Tingkat;
 use PDF;
 use Illuminate\Http\Request;
@@ -165,10 +165,9 @@ class CetakRaportController extends Controller
         'anggotaEkskul' => AnggotaEkskul::where('siswa_id', $siswa->id)->get(),
         'ketidakhadiran' => Ketidakhadiran::where('siswa_id', $siswa->id)->get(),
         'catatanwalas' => CatatanWalas::where('siswa_id', $siswa->id)->get(),
-        'studentKokurikuler' => StudentKokurikuler::where('student_id', $siswa->id)
+        'studentKokurikuler' => StudentKokurikulerDescription::where('student_id', $siswa->id)
           ->where('tapel_id', $siswa->kelas->tapel_id)
-          ->with('subdimension.dimension')
-          ->get(),
+          ->first(),
       ])->setPaper($paper, 'Potrait')->stream('RAPOR HASIL BELAJAR - ' . $siswa->name . ' ' . $siswa->kelas->name . ' ' . $siswa->nis . '.pdf');
     }
 }

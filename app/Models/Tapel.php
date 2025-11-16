@@ -23,6 +23,14 @@ class Tapel extends Model
       return $this->hasMany(StudentKokurikuler::class, 'tapel_id');
     }
 
+    public function kokurikulerLevels(){
+      return $this->hasMany(StudentKokurikulerLevel::class, 'tapel_id');
+    }
+
+    public function kokurikulerDescriptions(){
+      return $this->hasMany(StudentKokurikulerDescription::class, 'tapel_id');
+    }
+
     // HELPER
     public function tanggal(){
       return ($this->tanggal) ? Carbon::parse($this->tanggal)->locale('id_ID')->isoFormat('dddd, D MMMM Y') : '-';

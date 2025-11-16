@@ -17,6 +17,7 @@ use App\Http\Controllers\KelasController;
 use App\Http\Controllers\KelompokController;
 use App\Http\Controllers\KelompokMapelController;
 use App\Http\Controllers\KetidakhadiranController;
+use App\Http\Controllers\KokurikulerSettingController;
 use App\Http\Controllers\KokurikulerController;
 use App\Http\Controllers\LegerNilaiController;
 use App\Http\Controllers\LoginController;
@@ -92,6 +93,8 @@ Route::middleware('auth')->group(function(){
   Route::resource('/ketidakhadiran', KetidakhadiranController::class)->middleware('can:walikelas');
   Route::resource('/catatanwalas', CatatanWalasController::class)->middleware('can:walikelas');
   Route::resource('/kokurikuler', KokurikulerController::class)->middleware('can:walikelas');
+  Route::put('/kokurikuler/dimensions/{dimension}', [KokurikulerSettingController::class, 'updateDimension'])->name('kokurikuler.dimensions.update')->middleware('can:walikelas');
+  Route::put('/kokurikuler/templates', [KokurikulerSettingController::class, 'updateTemplates'])->name('kokurikuler.templates.update')->middleware('can:walikelas');
   Route::resource('/ekskul', EkskulController::class);
 
 Route::middleware('can:pembinaekskul')->group(function(){

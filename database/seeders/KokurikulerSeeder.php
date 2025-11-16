@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\KokurikulerDimension;
 use App\Models\KokurikulerSubdimension;
+use App\Models\KokurikulerTemplate;
 use Illuminate\Database\Seeder;
 
 class KokurikulerSeeder extends Seeder
@@ -158,21 +159,37 @@ class KokurikulerSeeder extends Seeder
         ];
 
         foreach ($dimensions as $dimensionData) {
-            $dimension = KokurikulerDimension::create([
-                'name' => $dimensionData['name'],
-                'description' => $dimensionData['description'],
-            ]);
+            $dimension = KokurikulerDimension::firstOrCreate(
+                ['name' => $dimensionData['name']],
+                [
+                    'description' => $dimensionData['description'],
+                ]
+            );
 
             foreach ($dimensionData['subdimensions'] as $subdimensionData) {
-                KokurikulerSubdimension::create([
-                    'dimension_id' => $dimension->id,
-                    'name' => $subdimensionData['name'],
-                    'berkembang' => $subdimensionData['berkembang'],
-                    'cakap' => $subdimensionData['cakap'],
-                    'mahir' => $subdimensionData['mahir'],
-                ]);
+                KokurikulerSubdimension::firstOrCreate(
+                    [
+                        'dimension_id' => $dimension->id,
+                        'name' => $subdimensionData['name'],
+                    ],
+                    [
+                        'berkembang' => $subdimensionData['berkembang'],
+                        'cakap' => $subdimensionData['cakap'],
+                        'mahir' => $subdimensionData['mahir'],
+                    ]
+                );
             }
         }
+
+        KokurikulerTemplate::firstOrCreate(
+            ['level' => 'tinggi'],
+            ['template_text' => 'Ananda {{ student_name }} sudah baik dalam {{ list_of_descriptions }}.']
+        );
+
+        KokurikulerTemplate::firstOrCreate(
+            ['level' => 'rendah'],
+            ['template_text' => 'Ananda {{ student_name }} perlu bantuan dalam {{ list_of_descriptions }}.']
+        );
     }
 }
 
