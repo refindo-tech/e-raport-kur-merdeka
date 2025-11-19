@@ -12,7 +12,8 @@ class KokurikulerSettingController extends Controller
 {
     public function updateDimension(Request $request, KokurikulerDimension $dimension)
     {
-        if (!Auth::user()->isWaliKelas()) {
+        $user = Auth::user();
+        if (!$user->isAdmin() && !$user->isWaliKelas()) {
             abort(403);
         }
 
@@ -31,7 +32,8 @@ class KokurikulerSettingController extends Controller
 
     public function updateTemplates(Request $request)
     {
-        if (!Auth::user()->isWaliKelas()) {
+        $user = Auth::user();
+        if (!$user->isAdmin() && !$user->isWaliKelas()) {
             abort(403);
         }
 

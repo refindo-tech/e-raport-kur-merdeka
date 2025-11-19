@@ -21,11 +21,14 @@ class KokurikulerController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        if (!$user->isWaliKelas()) {
+        if (!$user->isAdmin() && !$user->isWaliKelas()) {
             abort(403);
         }
 
-        $data = Kelas::where('guru_id', $user->guru->id);
+        // Admin dapat melihat semua kelas, Wali Kelas hanya kelas yang diampu
+        $data = $user->isAdmin() 
+            ? Kelas::query() 
+            : Kelas::where('guru_id', $user->guru->id);
 
         if ($request->ajax()) {
             if ($request->tingkat_id) {
@@ -58,11 +61,13 @@ class KokurikulerController extends Controller
     public function show(Request $request, $id)
     {
         $user = Auth::user();
-        if (!($user->isWaliKelas() && ($user->guru->id == Kelas::find($id)->guru_id))) {
+        $kelas = Kelas::findOrFail($id);
+        
+        // Admin dapat mengakses semua kelas, Wali Kelas hanya kelas yang diampu
+        if (!$user->isAdmin() && !($user->isWaliKelas() && ($user->guru->id == $kelas->guru_id))) {
             abort(403);
         }
 
-        $kelas = Kelas::findOrFail($id);
         $tapel = Tapel::where('id', $kelas->tapel_id)->first();
         $siswa = Siswa::whereHas('user', fn ($q) => $q->where('is_aktif', true))
             ->where('kelas_id', $id)
@@ -116,7 +121,7 @@ class KokurikulerController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        if (!$user->isWaliKelas()) {
+        if (!$user->isAdmin() && !$user->isWaliKelas()) {
             return response()->json(['failed' => 'Unauthorized']);
         }
 

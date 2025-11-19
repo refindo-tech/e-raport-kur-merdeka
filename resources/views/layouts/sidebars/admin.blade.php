@@ -44,6 +44,7 @@
         Request::is('pembelajaran*') |
         Request::is('ketidakhadiran*') |
         Request::is('catatanwalas*') |
+        Request::is('kokurikuler*') |
         Request::is('ekstrakurikuler*') |
         Request::is('ekskul*') |
         Request::is('anggotaekskul*') |
@@ -56,6 +57,7 @@
             Request::is('pembelajaran*') |
             Request::is('ketidakhadiran*') |
             Request::is('catatanwalas*') |
+            Request::is('kokurikuler*') |
             Request::is('ekstrakurikuler*') |
             Request::is('ekskul*') |
             Request::is('anggotaekskul*') |
@@ -101,6 +103,12 @@
             <a href="{{ route('ekskul.index') }}" class="nav-link {{ Request::is('ekskul*') | Request::is('anggotaekskul*') ? 'active' : '' }}">
                 <i class="far fa-circle nav-icon"></i>
                 <p>Data Ekstrakurikuler</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('kokurikuler.index') }}" class="nav-link {{ Request::is('kokurikuler*') ? 'active' : '' }}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Kokurikuler</p>
             </a>
         </li>
     </ul>

@@ -92,9 +92,9 @@ Route::middleware('auth')->group(function(){
   Route::resource('/pembelajaran', PembelajaranController::class);
   Route::resource('/ketidakhadiran', KetidakhadiranController::class)->middleware('can:walikelas');
   Route::resource('/catatanwalas', CatatanWalasController::class)->middleware('can:walikelas');
-  Route::resource('/kokurikuler', KokurikulerController::class)->middleware('can:walikelas');
-  Route::put('/kokurikuler/dimensions/{dimension}', [KokurikulerSettingController::class, 'updateDimension'])->name('kokurikuler.dimensions.update')->middleware('can:walikelas');
-  Route::put('/kokurikuler/templates', [KokurikulerSettingController::class, 'updateTemplates'])->name('kokurikuler.templates.update')->middleware('can:walikelas');
+  Route::resource('/kokurikuler', KokurikulerController::class);
+  Route::put('/kokurikuler/dimensions/{dimension}', [KokurikulerSettingController::class, 'updateDimension'])->name('kokurikuler.dimensions.update');
+  Route::put('/kokurikuler/templates', [KokurikulerSettingController::class, 'updateTemplates'])->name('kokurikuler.templates.update');
   Route::resource('/ekskul', EkskulController::class);
 
 Route::middleware('can:pembinaekskul')->group(function(){
