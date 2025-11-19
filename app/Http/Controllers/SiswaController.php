@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException;
 use Yajra\DataTables\Facades\DataTables;
 
 class SiswaController extends Controller
@@ -231,6 +232,7 @@ class SiswaController extends Controller
     public function destroy(Siswa $siswa)
     {
       $success = $siswa->name . ' berhasil dihapus!';
+      // Hapus user, siswa akan otomatis terhapus karena cascade delete
       $siswa->user->delete();
       return response()->json(['success' => $success]);
     }
@@ -272,12 +274,17 @@ class SiswaController extends Controller
 
       try {
         DB::beginTransaction();
-          Siswa::whereIn('id', $request->siswa_id)->delete();
+          // Ambil user_id dari siswa yang akan dihapus
+          $siswaIds = $request->siswa_id;
+          $userIds = Siswa::whereIn('id', $siswaIds)->pluck('user_id')->toArray();
+          
+          // Hapus user, siswa akan otomatis terhapus karena cascade delete
+          User::whereIn('id', $userIds)->delete();
         DB::commit();
         return response()->json(['success' => 'Berhasil dihapus!']);
       } catch (\Throwable $th) {
-        throw $th;
         DB::rollBack();
+        \Log::error('Delete Many Siswa Error: ' . $th->getMessage());
         return response()->json(['failed' => 'Gagal, coba lagi!']);
       }
     }
@@ -294,10 +301,32 @@ class SiswaController extends Controller
       }
 
       try {
-        Excel::import(new SiswaImport, request()->file('file'));
+        $import = new SiswaImport();
+        Excel::import($import, request()->file('file'));
+        
+        $failures = $import->getFailures();
+        if (!empty($failures)) {
+          $failureMessages = [];
+          foreach ($failures as $failure) {
+            $failureMessages[] = "Baris {$failure['row']}: " . implode(', ', $failure['errors']);
+          }
+          return redirect()->back()
+            ->with('success', 'Data siswa berhasil diimport!')
+            ->with('warning', 'Beberapa data memiliki masalah: ' . implode(' | ', $failureMessages));
+        }
+        
         return redirect()->back()->with('success', 'Data siswa berhasil diimport!');
+      } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+        $failures = $e->failures();
+        $failureMessages = [];
+        foreach ($failures as $failure) {
+          $failureMessages[] = "Baris {$failure->row()}: " . implode(', ', $failure->errors());
+        }
+        return back()->withFailed('Import Gagal! Validasi error: ' . implode(' | ', $failureMessages));
       } catch (\Throwable $th) {
-        return back()->withFailed('Import Gagal! cek kembali ketentuan import!');
+        \Log::error('Import Siswa Error: ' . $th->getMessage());
+        \Log::error('Stack Trace: ' . $th->getTraceAsString());
+        return back()->withFailed('Import Gagal! ' . $th->getMessage());
       }
 
     }

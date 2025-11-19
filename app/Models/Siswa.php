@@ -50,10 +50,6 @@ class Siswa extends Model
       return $this->hasMany(CatatanProjek::class);
     }
 
-    public function studentKokurikuler(){
-      return $this->hasMany(StudentKokurikuler::class, 'student_id');
-    }
-
     public function kokurikulerLevels(){
       return $this->hasMany(StudentKokurikulerLevel::class, 'student_id');
     }
