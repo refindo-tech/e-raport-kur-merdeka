@@ -150,6 +150,25 @@ use Carbon\Carbon;
     
     {{-- CONTENT --}}
     <div class="content">
+      
+      @if ($studentKokurikuler && $studentKokurikuler->final_description)
+      <table cellspacing="0">
+        <!-- Kokurikuler -->
+        <tr>
+          <td colspan="4" style="height: 25px; padding-top: 5px"><strong>KOKURIKULER</strong></td>
+        </tr>
+        <tr class="sikap">
+          <td colspan="4" class="description" style="height: auto;">
+            {{ $studentKokurikuler->final_description }}
+          </td>
+        </tr>
+        <!-- End Kokurikuler -->
+      </table>
+      @endif
+      
+      <br>
+      <br>
+
       <table cellspacing="0">
         <!-- Ekskul -->
         <tr class="heading">
@@ -211,23 +230,6 @@ use Carbon\Carbon;
         </tr>
         <!-- End Ketidakhadiran  -->
       </table>
-      
-      <br>
-      
-      @if ($studentKokurikuler && $studentKokurikuler->final_description)
-      <table cellspacing="0">
-        <!-- Kokurikuler -->
-        <tr>
-          <td colspan="4" style="height: 25px; padding-top: 5px"><strong>KOKURIKULER</strong></td>
-        </tr>
-        <tr class="sikap">
-          <td colspan="4" class="description" style="height: auto;">
-            {{ $studentKokurikuler->final_description }}
-          </td>
-        </tr>
-        <!-- End Kokurikuler -->
-      </table>
-      @endif
       
       <br>
       
