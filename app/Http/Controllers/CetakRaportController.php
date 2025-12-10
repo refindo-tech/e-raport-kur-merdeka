@@ -101,10 +101,27 @@ class CetakRaportController extends Controller
         abort(403);
       }
 
-      return PDF::loadview('pages.cetakrapor.kelengkapan.print',[
-        'siswa' => $siswa,
-        'sekolah' => Sekolah::first(),
-      ])->setPaper($paper, 'Potrait')->stream('KELENGKAPAN RAPOR - ' . $siswa->name . ' ' . $siswa->kelas->name . ' ' . $siswa->nis . '.pdf');
+      // Sanitize filename - remove newlines and invalid characters for headers
+      $fileName = 'KELENGKAPAN RAPOR - ' . $siswa->name . ' ' . $siswa->kelas->name . ' ' . $siswa->nis . '.pdf';
+      $fileName = preg_replace('/[\r\n\t]+/', ' ', $fileName); // Remove newlines, carriage returns, tabs
+      $fileName = preg_replace('/\s+/', ' ', $fileName); // Replace multiple spaces with single space
+      $fileName = trim($fileName); // Trim whitespace
+
+      try {
+        return PDF::loadview('pages.cetakrapor.kelengkapan.print',[
+          'siswa' => $siswa,
+          'sekolah' => Sekolah::first(),
+        ])->setPaper($paper, 'Potrait')->stream($fileName);
+      } catch (\Exception $e) {
+        \Log::error('PDF Generation Error (Kelengkapan): ' . $e->getMessage(), [
+          'fileName' => $fileName,
+          'siswa_name' => $siswa->name,
+          'kelas_name' => $siswa->kelas->name,
+          'nis' => $siswa->nis,
+          'trace' => $e->getTraceAsString()
+        ]);
+        throw $e;
+      }
     }
 
     public function p5(Siswa $siswa, $paper) {
@@ -135,14 +152,31 @@ class CetakRaportController extends Controller
       ->distinct('dimensis.id')
       ->get();
 
-      return PDF::loadview('pages.cetakrapor.p5.print',[
-        'siswa' => $siswa,
-        'sekolah' => Sekolah::first(),
-        'projek' => $projek,
-        'dimensi' => $dimensi,
-        'capaianprojek' => $capaianProjek,
-        'centang' => '√',
-      ])->setPaper($paper, 'Potrait')->stream('RAPOR PROJEK - ' . $siswa->name . ' ' . $siswa->kelas->name . ' ' . $siswa->nis . '.pdf');
+      // Sanitize filename - remove newlines and invalid characters for headers
+      $fileName = 'RAPOR PROJEK - ' . $siswa->name . ' ' . $siswa->kelas->name . ' ' . $siswa->nis . '.pdf';
+      $fileName = preg_replace('/[\r\n\t]+/', ' ', $fileName); // Remove newlines, carriage returns, tabs
+      $fileName = preg_replace('/\s+/', ' ', $fileName); // Replace multiple spaces with single space
+      $fileName = trim($fileName); // Trim whitespace
+
+      try {
+        return PDF::loadview('pages.cetakrapor.p5.print',[
+          'siswa' => $siswa,
+          'sekolah' => Sekolah::first(),
+          'projek' => $projek,
+          'dimensi' => $dimensi,
+          'capaianprojek' => $capaianProjek,
+          'centang' => '√',
+        ])->setPaper($paper, 'Potrait')->stream($fileName);
+      } catch (\Exception $e) {
+        \Log::error('PDF Generation Error (P5): ' . $e->getMessage(), [
+          'fileName' => $fileName,
+          'siswa_name' => $siswa->name,
+          'kelas_name' => $siswa->kelas->name,
+          'nis' => $siswa->nis,
+          'trace' => $e->getTraceAsString()
+        ]);
+        throw $e;
+      }
     }
 
     public function semester(Siswa $siswa, $paper) {
@@ -156,18 +190,36 @@ class CetakRaportController extends Controller
         abort(403);
       }
       $kelMapelId = $siswa->kelas->pembelajaran->pluck('mapel.kelompok_mapel_id')->unique();
-      return PDF::loadview('pages.cetakrapor.semester.print2',[
-        'siswa' => $siswa,
-        'sekolah' => Sekolah::first(),
-        'kelompokmapel' => KelompokMapel::whereIn('id', $kelMapelId)->get(),
-        'pembelajaran' => Pembelajaran::where('kelas_id', $siswa->kelas_id)->get(),
-        'nilaiakhir' => NilaiAkhir::where('siswa_id', $siswa->id)->whereIn('pembelajaran_id', $siswa->kelas->pembelajaran->pluck('id')),
-        'anggotaEkskul' => AnggotaEkskul::where('siswa_id', $siswa->id)->get(),
-        'ketidakhadiran' => Ketidakhadiran::where('siswa_id', $siswa->id)->get(),
-        'catatanwalas' => CatatanWalas::where('siswa_id', $siswa->id)->get(),
-        'studentKokurikuler' => StudentKokurikulerDescription::where('student_id', $siswa->id)
-          ->where('tapel_id', $siswa->kelas->tapel_id)
-          ->first(),
-      ])->setPaper($paper, 'Potrait')->stream('RAPOR HASIL BELAJAR - ' . $siswa->name . ' ' . $siswa->kelas->name . ' ' . $siswa->nis . '.pdf');
+      
+      // Sanitize filename - remove newlines and invalid characters for headers
+      $fileName = 'RAPOR HASIL BELAJAR - ' . $siswa->name . ' ' . $siswa->kelas->name . ' ' . $siswa->nis . '.pdf';
+      $fileName = preg_replace('/[\r\n\t]+/', ' ', $fileName); // Remove newlines, carriage returns, tabs
+      $fileName = preg_replace('/\s+/', ' ', $fileName); // Replace multiple spaces with single space
+      $fileName = trim($fileName); // Trim whitespace
+      
+      try {
+        return PDF::loadview('pages.cetakrapor.semester.print2',[
+          'siswa' => $siswa,
+          'sekolah' => Sekolah::first(),
+          'kelompokmapel' => KelompokMapel::whereIn('id', $kelMapelId)->get(),
+          'pembelajaran' => Pembelajaran::where('kelas_id', $siswa->kelas_id)->get(),
+          'nilaiakhir' => NilaiAkhir::where('siswa_id', $siswa->id)->whereIn('pembelajaran_id', $siswa->kelas->pembelajaran->pluck('id')),
+          'anggotaEkskul' => AnggotaEkskul::where('siswa_id', $siswa->id)->get(),
+          'ketidakhadiran' => Ketidakhadiran::where('siswa_id', $siswa->id)->get(),
+          'catatanwalas' => CatatanWalas::where('siswa_id', $siswa->id)->get(),
+          'studentKokurikuler' => StudentKokurikulerDescription::where('student_id', $siswa->id)
+            ->where('tapel_id', $siswa->kelas->tapel_id)
+            ->first(),
+        ])->setPaper($paper, 'Potrait')->stream($fileName);
+      } catch (\Exception $e) {
+        \Log::error('PDF Generation Error: ' . $e->getMessage(), [
+          'fileName' => $fileName,
+          'siswa_name' => $siswa->name,
+          'kelas_name' => $siswa->kelas->name,
+          'nis' => $siswa->nis,
+          'trace' => $e->getTraceAsString()
+        ]);
+        throw $e;
+      }
     }
 }

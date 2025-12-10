@@ -3,12 +3,29 @@
 
 @php
   use Carbon\Carbon;
+  use Illuminate\Support\Str;
 @endphp
 
 <head>
   <meta charset="utf-8" />
-  <title>RAPOR PROJEK | {{$siswa->name}} ({{$siswa->nis}})</title>
+  @php
+    // Sanitize title - remove newlines and invalid characters
+    $title = 'RAPOR PROJEK | ' . $siswa->name . ' (' . $siswa->nis . ')';
+    $title = preg_replace('/[\r\n\t]+/', ' ', $title);
+    $title = preg_replace('/\s+/', ' ', $title);
+    $title = trim($title);
+  @endphp
+  <title>{{ $title }}</title>
   <link href="./cetakraport/invoice_raport.css" rel="stylesheet">
+  <script>
+    // Debug info for browser console
+    console.log('PDF Title (P5):', {{ json_encode($title) }});
+    console.log('Siswa Name:', {{ json_encode($siswa->name) }});
+    console.log('NIS:', {{ json_encode($siswa->nis) }});
+    @if(isset($siswa->kelas))
+    console.log('Kelas Name:', {{ json_encode($siswa->kelas->name) }});
+    @endif
+  </script>
 </head>
 
 <body>
