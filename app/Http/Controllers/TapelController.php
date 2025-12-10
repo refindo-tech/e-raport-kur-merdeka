@@ -29,6 +29,7 @@ class TapelController extends Controller
         'semester' => 'required',
         'tempat' => 'nullable',
         'tanggal' => 'nullable|date',
+        'tanggal_identital_rapor' => 'nullable|date',
       ]);
 
       if ((intval($request->tahun1) + 1) !== intval($request->tahun2)){
@@ -40,6 +41,7 @@ class TapelController extends Controller
         'semester' => $request->semester,
         'tempat' => $request->tempat,
         'tanggal' => $request->tanggal,
+        'tanggal_identital_rapor' => $request->tanggal_identital_rapor,
       ]);
 
       return redirect(route('tapel.index'))->withSuccess('Data berhasil diperbarui!');

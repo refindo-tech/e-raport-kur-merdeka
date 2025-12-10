@@ -43,4 +43,11 @@
       @error('tanggal') <span class="invalid-feedback mt-1">{{ $message }}</span> @enderror
     </div>
   </div>
+  <div class="form-group row">
+    <label for="tanggal_identital_rapor" class="col-sm-3 col-form-label">Tanggal Identital Rapor</label>
+    <div class="col-sm-9">
+      <input type="date" name="tanggal_identital_rapor" value="{{ old('tanggal_identital_rapor', $tapel->tanggal_identital_rapor) }}" class="form-control @error('tanggal_identital_rapor') is-invalid @enderror" id="tanggal_identital_rapor" placeholder="Ketik Tanggal Identital Rapor">
+      @error('tanggal_identital_rapor') <span class="invalid-feedback mt-1">{{ $message }}</span> @enderror
+    </div>
+  </div>
 </div>

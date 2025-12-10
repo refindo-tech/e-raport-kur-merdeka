@@ -318,10 +318,10 @@ use Illuminate\Support\Str;
             {{-- Start New Code --}}
             @php
             $tempat = $siswa->kelas->tapel->tempat ?? '................,';
-            $tanggalDiterima = $siswa->diterimaditanggal ? Str::before($siswa->diterimaditanggal, ' ') : ' ................................';
+            $tanggalIdentitalRapor = $siswa->kelas->tapel->tanggal_identital_rapor ?? null;
             try {
-              $formattedTanggal = $tanggalDiterima 
-              ? Carbon::createFromFormat('Y-m-d', $tanggalDiterima)->locale('id')->isoFormat('D MMMM YYYY') 
+              $formattedTanggal = $tanggalIdentitalRapor 
+              ? Carbon::createFromFormat('Y-m-d', $tanggalIdentitalRapor)->locale('id')->isoFormat('MMMM YYYY') 
               : ' ................................';
             } catch (\Exception $e) {
               $formattedTanggal = ' ................................';

@@ -36,6 +36,10 @@ class Tapel extends Model
       return ($this->tanggal) ? Carbon::parse($this->tanggal)->locale('id_ID')->isoFormat('dddd, D MMMM Y') : '-';
     }
 
+    public function tanggalIdentitalRapor(){
+      return ($this->tanggal_identital_rapor) ? Carbon::parse($this->tanggal_identital_rapor)->locale('id_ID')->isoFormat('dddd, D MMMM Y') : '-';
+    }
+
     public function tahun_pelajaran(){
       return $this->tahun_pelajaran .  ' - ' . ($this->semester == '1' ? 'Ganjil' : 'Genap');
     }

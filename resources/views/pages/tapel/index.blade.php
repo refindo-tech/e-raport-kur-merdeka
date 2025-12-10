@@ -39,6 +39,7 @@
                       <th scope="col">Semester</th>
                       <th scope="col">Tempat Pembagian Raport</th>
                       <th scope="col">Tanggal Pembagian Raport</th>
+                      <th scope="col">Tanggal Identital Rapor</th>
                       <th scope="col">Aksi</th>
                     </tr>
                   </thead>
@@ -50,6 +51,7 @@
                         <td>{{ $item->semester() }}</td>
                         <td>{{ $item->tempat ?? '-'}}</td>
                         <td>{{ $item->tanggal() }}</td>
+                        <td>{{ $item->tanggalIdentitalRapor() }}</td>
                         <td>
                           <div class="btn-group">
                             <a href="{{ route('tapel.edit', $item) }}" class="edit-button btn btn-warning btn-sm mx-1">
