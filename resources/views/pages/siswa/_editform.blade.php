@@ -62,12 +62,12 @@
     <div class="col-sm-9">
       <select name="agama" id="agama" class="form-control selectTwo @error('agama') is-invalid @enderror" data-width="100%" required>
         <option disabled selected hidden>-- Pilih --</option>
-        <option value="Islam" {{ old('Islam', $siswa->agama) == 'Islam' ? 'selected' : '' }}>Islam</option>
-        <option value="Katolik" {{ old('Katolik', $siswa->agama) == 'Katolik' ? 'selected' : '' }}>Katolik</option>
-        <option value="Protestan" {{ old('Protestan', $siswa->agama) == 'Protestan' ? 'selected' : '' }}>Protestan</option>
-        <option value="Hindu" {{ old('Hindu', $siswa->agama) == 'Hindu' ? 'selected' : '' }}>Hindu</option>
-        <option value="Buddha" {{ old('Buddha', $siswa->agama) == 'Buddha' ? 'selected' : '' }}>Buddha</option>
-        <option value="Konghucu" {{ old('Konghucu', $siswa->agama) == 'Konghucu' ? 'selected' : '' }}>Konghucu</option>
+        <option value="Islam" {{ old('agama', $siswa->agama) == 'Islam' ? 'selected' : '' }}>Islam</option>
+        <option value="Katolik" {{ old('agama', $siswa->agama) == 'Katolik' ? 'selected' : '' }}>Katolik</option>
+        <option value="Protestan" {{ old('agama', $siswa->agama) == 'Protestan' ? 'selected' : '' }}>Protestan</option>
+        <option value="Hindu" {{ old('agama', $siswa->agama) == 'Hindu' ? 'selected' : '' }}>Hindu</option>
+        <option value="Buddha" {{ old('agama', $siswa->agama) == 'Buddha' ? 'selected' : '' }}>Buddha</option>
+        <option value="Konghucu" {{ old('agama', $siswa->agama) == 'Konghucu' ? 'selected' : '' }}>Konghucu</option>
       </select>
       @error('agama') <span class="invalid-feedback mt-1">{{ $message }}</span> @enderror
     </div>

@@ -170,57 +170,133 @@ class SiswaController extends Controller
      */
     public function update(Request $request, Siswa $siswa)
     {
-      $request->validate([
-        'kelas_id' => 'nullable',
-        'name' => 'required',
-        'nis' => 'nullable|numeric|unique:siswas,nis,' . $siswa->id,
-        'nisn' => 'nullable|numeric|unique:siswas,nisn,' . $siswa->id,
-        'tempatlahir' => 'required',
-        'tanggallahir' => 'required|date',
-        'jk' => 'required',
-        'agama' => 'required',
-        'statusdalamkeluarga' => 'nullable',
-        'anak_ke' => 'nullable|numeric',
-        'alamatsiswa' => 'nullable',
-        'teleponsiswa' => 'nullable',
-        'sekolahasal' => 'nullable',
-        'diterimadikelas' => 'nullable',
-        'diterimaditanggal' => 'nullable|date',
-        'namaayah' => 'nullable',
-        'pekerjaanayah' => 'nullable',
-        'namaibu' => 'nullable',
-        'pekerjaanibu' => 'nullable',
-        'alamatortu' => 'nullable',
-        'teleponortu' => 'nullable',
-        'namawali' => 'nullable',
-        'pekerjaanwali' => 'nullable',
-        'alamatwali' => 'nullable',
-        'teleponwali' => 'nullable',
-
-        'email' => 'nullable|unique:users,email,' . $siswa->user_id,
-        'username' => 'required|unique:users,username,' . $siswa->user_id,
-        'is_aktif' => 'required',
-        'password' => 'nullable',
-
-      ]);
-
-      if (filled($request->password)) {
-        $siswa->user->update([
-          'username' => $request->username,
-          'email' => $request->email,
-          'is_aktif' => $request->is_aktif,
-          'password' => $request->password,
+      try {
+        \Log::info('Siswa Update Request', [
+          'siswa_id' => $siswa->id,
+          'request_data' => $request->all()
         ]);
-      } else {
-        $siswa->user->update([
-          'username' => $request->username,
-          'email' => $request->email,
-          'is_aktif' => $request->is_aktif,
+
+        $request->validate([
+          'kelas_id' => 'nullable',
+          'name' => 'required',
+          'nis' => 'nullable|numeric|unique:siswas,nis,' . $siswa->id,
+          'nisn' => 'nullable|numeric|unique:siswas,nisn,' . $siswa->id,
+          'tempatlahir' => 'required',
+          'tanggallahir' => 'required|date',
+          'jk' => 'required',
+          'agama' => 'required',
+          'statusdalamkeluarga' => 'nullable',
+          'anak_ke' => 'nullable|numeric',
+          'alamatsiswa' => 'nullable',
+          'teleponsiswa' => 'nullable',
+          'sekolahasal' => 'nullable',
+          'diterimadikelas' => 'nullable',
+          'diterimaditanggal' => 'nullable|date',
+          'namaayah' => 'nullable',
+          'pekerjaanayah' => 'nullable',
+          'namaibu' => 'nullable',
+          'pekerjaanibu' => 'nullable',
+          'alamatortu' => 'nullable',
+          'teleponortu' => 'nullable',
+          'namawali' => 'nullable',
+          'pekerjaanwali' => 'nullable',
+          'alamatwali' => 'nullable',
+          'teleponwali' => 'nullable',
+          'email' => 'nullable|unique:users,email,' . $siswa->user_id,
+          'username' => 'required|unique:users,username,' . $siswa->user_id,
+          'is_aktif' => 'required',
+          'password' => 'nullable',
         ]);
+
+        \Log::info('Validation passed for siswa update', ['siswa_id' => $siswa->id]);
+
+        DB::beginTransaction();
+
+        if (filled($request->password)) {
+          $userUpdate = $siswa->user->update([
+            'username' => $request->username,
+            'email' => $request->email,
+            'is_aktif' => $request->is_aktif,
+            'password' => $request->password,
+          ]);
+          \Log::info('User updated with password', ['user_id' => $siswa->user_id, 'success' => $userUpdate]);
+        } else {
+          $userUpdate = $siswa->user->update([
+            'username' => $request->username,
+            'email' => $request->email,
+            'is_aktif' => $request->is_aktif,
+          ]);
+          \Log::info('User updated without password', ['user_id' => $siswa->user_id, 'success' => $userUpdate]);
+        }
+
+        $siswaData = $request->except('username', 'password', 'email', 'is_aktif');
+        $siswaUpdate = $siswa->update($siswaData);
+        \Log::info('Siswa updated', ['siswa_id' => $siswa->id, 'success' => $siswaUpdate, 'data' => $siswaData]);
+
+        DB::commit();
+        \Log::info('Siswa update transaction committed', ['siswa_id' => $siswa->id]);
+
+        return redirect(route('siswa.index'))->withSuccess('Data berhasil diperbarui!');
+      } catch (\Illuminate\Validation\ValidationException $e) {
+        DB::rollBack();
+        \Log::error('Validation error in siswa update', [
+          'siswa_id' => $siswa->id,
+          'errors' => $e->errors()
+        ]);
+        
+        // Format error messages untuk popup
+        $errorMessages = [];
+        $fieldNames = [
+          'name' => 'Nama',
+          'kelas_id' => 'Kelas',
+          'nis' => 'NIS',
+          'nisn' => 'NISN',
+          'tempatlahir' => 'Tempat Lahir',
+          'tanggallahir' => 'Tanggal Lahir',
+          'jk' => 'Jenis Kelamin',
+          'agama' => 'Agama',
+          'statusdalamkeluarga' => 'Status Dalam Keluarga',
+          'anak_ke' => 'Anak Ke',
+          'alamatsiswa' => 'Alamat Siswa',
+          'teleponsiswa' => 'Telepon Siswa',
+          'sekolahasal' => 'Sekolah Asal',
+          'diterimadikelas' => 'Diterima Di Kelas',
+          'diterimaditanggal' => 'Diterima Di Tanggal',
+          'namaayah' => 'Nama Ayah',
+          'pekerjaanayah' => 'Pekerjaan Ayah',
+          'namaibu' => 'Nama Ibu',
+          'pekerjaanibu' => 'Pekerjaan Ibu',
+          'alamatortu' => 'Alamat Orang Tua',
+          'teleponortu' => 'Telepon Orang Tua',
+          'namawali' => 'Nama Wali',
+          'pekerjaanwali' => 'Pekerjaan Wali',
+          'alamatwali' => 'Alamat Wali',
+          'teleponwali' => 'Telepon Wali',
+          'email' => 'Email',
+          'username' => 'Username',
+          'is_aktif' => 'Status Aktif',
+          'password' => 'Password',
+        ];
+        
+        foreach ($e->errors() as $field => $messages) {
+          $fieldLabel = $fieldNames[$field] ?? ucfirst(str_replace('_', ' ', $field));
+          foreach ($messages as $message) {
+            $errorMessages[] = '<strong>' . $fieldLabel . '</strong>: ' . $message;
+          }
+        }
+        
+        $errorMessage = '<strong>Gagal menyimpan data siswa!</strong><br><br>Silakan perbaiki field berikut:<br>' . implode('<br>', $errorMessages);
+        
+        return back()->withInput()->withErrors($e->errors())->withFailed($errorMessage);
+      } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('Error updating siswa', [
+          'siswa_id' => $siswa->id,
+          'error' => $e->getMessage(),
+          'trace' => $e->getTraceAsString()
+        ]);
+        return back()->withInput()->withFailed('Terjadi kesalahan saat memperbarui data: ' . $e->getMessage());
       }
-
-      $siswa->update($request->except('username', 'password', 'email', 'is_aktif'));
-      return redirect(route('siswa.index'))->withSuccess('Data berhasil diperbarui!');
     }
 
     /**
