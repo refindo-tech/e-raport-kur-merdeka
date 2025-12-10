@@ -67,34 +67,45 @@ use Carbon\Carbon;
         @if ($kelompokmapel->count() >= 1)
         @foreach ($kelompokmapel as $item)
         
+        @php
+        $mapelId = \App\Models\Mapel::where('kelompok_mapel_id',$item->id)->pluck('id');
+        $pembelajaranItems = $pembelajaran->whereIn('mapel_id', $mapelId);
+        @endphp
+        
+        @if($pembelajaranItems->count() > 0)
+        <tbody style="page-break-inside: avoid; break-inside: avoid;">
         <tr class="nilai">
           <td colspan="4"><strong>{{ $item->name }}</strong></td>
         </tr>
         
-        @php
-        $mapelId = \App\Models\Mapel::where('kelompok_mapel_id',$item->id)->pluck('id');
-        @endphp
         <?php $no = 0; ?>
-        @foreach($pembelajaran->whereIn('mapel_id', $mapelId) as $i => $pemb)
+        @foreach($pembelajaranItems as $i => $pemb)
         <?php $no++; ?>
+        @php
+        $nilaiAkhir = $siswa->nilaiAkhir->where('pembelajaran_id', $pemb->id)->first();
+        @endphp
         <tr class="nilai">
-          <td rowspan="2" class="center">{{$no}}</td>
-          <td rowspan="2" >{{ $pemb->mapel->name }}</td>
-          <td rowspan="2" class="center">{{ $siswa->nilaiAkhir->where('pembelajaran_id', $pemb->id)->first()->nilai ?? '-'; }}</td>
-          @if (optional($siswa->nilaiAkhir->where('pembelajaran_id', $pemb->id)->first())->deskripsi_capaian_tinggi != null)
-          <td><span>Ananda {{$siswa->name}} {{ $siswa->nilaiAkhir->where('pembelajaran_id', $pemb->id)->first()->deskripsi_capaian_tinggi }} </span></td>
-          @else
-          <td><span>{{ null }}</span></td>
-          @endif
-        </tr>
-        <tr class="nilai">
-          @if (optional($siswa->nilaiAkhir->where('pembelajaran_id', $pemb->id)->first())->deskripsi_capaian_rendah != null)
-          <td><span style="display: flex;">Ananda {{$siswa->name}} {{ $siswa->nilaiAkhir->where('pembelajaran_id', $pemb->id)->first()->deskripsi_capaian_rendah }} </span></td>
-          @else
-          <td><span>{{ null }}</span></td>
-          @endif
+          <td class="center">{{$no}}</td>
+          <td>{{ $pemb->mapel->name }}</td>
+          <td class="center">{{ $nilaiAkhir->nilai ?? '-'; }}</td>
+          <td>
+            @if (optional($nilaiAkhir)->deskripsi_capaian_tinggi != null)
+            <span>Ananda {{$siswa->name}} {{ $nilaiAkhir->deskripsi_capaian_tinggi }}</span>
+            @if (optional($nilaiAkhir)->deskripsi_capaian_rendah != null)
+            <div style="border-top: 1px solid #333; margin: 3px -3px 0 -3px; padding-top: 3px; width: calc(100% + 6px);"></div>
+            <span style="display: block; margin-top: 3px;">Ananda {{$siswa->name}} {{ $nilaiAkhir->deskripsi_capaian_rendah }}</span>
+            @endif
+            @elseif (optional($nilaiAkhir)->deskripsi_capaian_rendah != null)
+            <span>Ananda {{$siswa->name}} {{ $nilaiAkhir->deskripsi_capaian_rendah }}</span>
+            @else
+            <span>{{ null }}</span>
+            @endif
+          </td>
         </tr>
         @endforeach
+        
+        </tbody>
+        @endif
         
         @endforeach
         @endif
