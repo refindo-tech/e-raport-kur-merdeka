@@ -62,28 +62,39 @@ class NaikTapelService
     {
         $target = $this->targetDari($sumber, $jenis);
         $siswa = $this->siswaSumber($sumber);
+        $opsi = $this->opsiKelas($sumber);
 
-        $baris = $siswa->map(function (Siswa $item) use ($target, $sumber) {
+        $baris = $siswa->map(function (Siswa $item) use ($target, $sumber, $opsi) {
             $tingkat = (int) optional(optional($item->kelas)->tingkat)->angka;
             $keputusan = $this->keputusanWali($item, $target['naik_tingkat'], $tingkat, $sumber->id);
+            $defaultNaik = $this->kelasDefault($opsi, $item->kelas, 'naik');
+            $defaultTinggal = $this->kelasDefault($opsi, $item->kelas, 'tinggal');
 
             return [
                 'siswa' => $item,
                 'tingkat' => $tingkat,
                 'aksi' => $keputusan,
                 'kelas_asal' => $item->kelas ? $item->kelas->name . ' (tingkat ' . $tingkat . ')' : 'Belum punya kelas',
-                'kelas_tujuan' => $this->labelTujuan($item, $keputusan, $tingkat),
+                'kelas_tujuan' => (!$item->kelas || $keputusan === 'lulus')
+                    ? 'Tidak masuk tapel baru'
+                    : $item->kelas->name . ' (tingkat ' . $tingkat . ')',
+                'kelas_tujuan_id' => $keputusan === 'naik' ? $defaultNaik : ($keputusan === 'tinggal' ? $defaultTinggal : null),
+                'default_naik' => $defaultNaik,
+                'default_tinggal' => $defaultTinggal,
             ];
         });
 
-        return compact('sumber', 'target', 'jenis') + ['baris' => $baris];
+        return compact('sumber', 'target', 'jenis') + [
+            'baris' => $baris,
+            'opsi_kelas' => $opsi,
+        ];
     }
 
-    public function jalankan(Tapel $sumber, string $jenis, array $aksiPerSiswa): array
+    public function jalankan(Tapel $sumber, string $jenis, array $aksiPerSiswa, array $kelasTujuanPerSiswa = []): array
     {
         $targetInfo = $this->targetDari($sumber, $jenis);
 
-        return DB::transaction(function () use ($sumber, $targetInfo, $aksiPerSiswa) {
+        return DB::transaction(function () use ($sumber, $targetInfo, $aksiPerSiswa, $kelasTujuanPerSiswa) {
             $target = Tapel::where('tahun_pelajaran', $targetInfo['tahun_pelajaran'])
                 ->where('semester', $targetInfo['semester'])
                 ->first();
@@ -110,16 +121,21 @@ class NaikTapelService
                 $keputusan[$siswa->id] = $aksi;
             }
 
+            $kelasSumber = $this->opsiKelas($sumber)->keyBy('id');
+            $pilihan = [];
             $kelasBaru = [];
             foreach ($siswaSumber as $siswa) {
                 $aksi = $keputusan[$siswa->id];
                 if ($aksi === 'lulus' || !$siswa->kelas) {
                     continue;
                 }
-                $tingkatTujuan = $this->tingkatTujuan($siswa->kelas->tingkat, $aksi);
-                $kunci = $siswa->kelas_id . ':' . $tingkatTujuan->id;
-                if (!isset($kelasBaru[$kunci])) {
-                    $kelasBaru[$kunci] = $this->salinKelas($siswa->kelas, $tingkatTujuan, $target);
+
+                $dipilih = $targetInfo['naik_tingkat']
+                    ? $this->kelasDipilih($kelasSumber, $kelasTujuanPerSiswa, $siswa)
+                    : $siswa->kelas;
+                $pilihan[$siswa->id] = $dipilih->id;
+                if (!isset($kelasBaru[$dipilih->id])) {
+                    $kelasBaru[$dipilih->id] = $this->salinKelas($dipilih, $dipilih->tingkat, $target);
                 }
             }
 
@@ -145,8 +161,7 @@ class NaikTapelService
                     continue;
                 }
 
-                $tingkatTujuan = $this->tingkatTujuan($siswa->kelas->tingkat, $aksi);
-                $kelas = $kelasBaru[$siswa->kelas_id . ':' . $tingkatTujuan->id];
+                $kelas = $kelasBaru[$pilihan[$siswa->id]];
                 $siswa->update(['kelas_id' => $kelas->id]);
                 RiwayatKelas::catat($siswa->fresh());
                 $this->barisKosong($siswa, $target);
@@ -223,30 +238,38 @@ class NaikTapelService
         }
     }
 
-    private function tingkatTujuan(Tingkat $asal, string $aksi): Tingkat
+    private function opsiKelas(Tapel $sumber)
     {
-        if ($aksi !== 'naik') {
-            return $asal;
-        }
-
-        $berikut = Tingkat::all()->first(fn (Tingkat $tingkat) => (int) $tingkat->angka === ((int) $asal->angka + 1));
-        if (!$berikut) {
-            throw new InvalidArgumentException('Tingkat setelah ' . $asal->angka . ' tidak ada.');
-        }
-
-        return $berikut;
+        return Kelas::with('tingkat')
+            ->where('tapel_id', $sumber->id)
+            ->orderBy('tingkat_id')
+            ->orderBy('name')
+            ->get();
     }
 
-    private function labelTujuan(Siswa $siswa, string $aksi, int $tingkat): string
+    private function kelasDefault($opsi, ?Kelas $asal, string $aksi): ?int
     {
-        if ($aksi === 'lulus' || !$siswa->kelas) {
-            return 'Tidak masuk tapel baru';
-        }
-        if ($aksi === 'naik') {
-            return $siswa->kelas->name . ' (tingkat ' . ($tingkat + 1) . ')';
+        if (!$asal || !$asal->tingkat || !in_array($aksi, ['naik', 'tinggal'], true)) {
+            return null;
         }
 
-        return $siswa->kelas->name . ' (tingkat ' . $tingkat . ')';
+        $angka = $aksi === 'naik' ? ((int) $asal->tingkat->angka + 1) : (int) $asal->tingkat->angka;
+        $cocok = $opsi->first(function (Kelas $kelas) use ($asal, $angka) {
+            return $kelas->name === $asal->name && (int) optional($kelas->tingkat)->angka === $angka;
+        });
+
+        return $cocok ? $cocok->id : null;
+    }
+
+    private function kelasDipilih($kelasSumber, array $kelasTujuanPerSiswa, Siswa $siswa): Kelas
+    {
+        $id = (int) ($kelasTujuanPerSiswa[$siswa->id] ?? 0);
+        $dipilih = $kelasSumber->get($id);
+        if (!$dipilih || !$dipilih->tingkat) {
+            throw new InvalidArgumentException('Siswa ' . $siswa->name . ' belum memilih kelas tujuan yang sudah ada.');
+        }
+
+        return $dipilih;
     }
 
     private function salinKelas(Kelas $asal, Tingkat $tingkat, Tapel $target): Kelas

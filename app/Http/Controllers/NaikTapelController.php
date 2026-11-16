@@ -43,10 +43,17 @@ class NaikTapelController extends Controller
             'jenis' => 'required|in:semester,tahun_baru',
             'aksi' => 'required|array',
             'aksi.*' => 'required|in:naik,tinggal,tetap,lulus',
+            'kelas_tujuan' => 'nullable|array',
+            'kelas_tujuan.*' => 'nullable|integer',
         ]);
 
         try {
-            $hasil = $service->jalankan($service->sumberAktif(), $request->jenis, $request->aksi);
+            $hasil = $service->jalankan(
+                $service->sumberAktif(),
+                $request->jenis,
+                $request->aksi,
+                $request->input('kelas_tujuan', [])
+            );
         } catch (InvalidArgumentException $e) {
             return redirect()->route('tapel.naik')->withFailed($e->getMessage());
         }

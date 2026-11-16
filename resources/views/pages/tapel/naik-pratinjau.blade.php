@@ -13,7 +13,7 @@
         <p>
           Dari <strong>{{ $sumber->tahun_pelajaran }} / {{ $sumber->semester() }}</strong>
           ke <strong>{{ $target['tahun_pelajaran'] }} / {{ $target['semester'] == '1' ? 'Ganjil' : 'Genap' }}</strong>.
-          Keputusan awal mengikuti catatan wali pada semester genap. Siswa lulus menjadi nonaktif dan tidak masuk tapel baru. Mereka tetap bisa dicetak dari kelas lama, dan bisa dihapus dari data siswa.
+          Keputusan awal mengikuti catatan wali pada semester genap. Untuk tahun pelajaran baru, kelas tujuan dipilih dari kelas yang sudah ada di tahun ini. Siswa lulus menjadi nonaktif dan tidak masuk tapel baru. Mereka tetap bisa dicetak dari kelas lama, dan bisa dihapus dari data siswa.
         </p>
         <form method="POST" action="{{ route('tapel.naik.store') }}">
           @csrf
@@ -55,12 +55,24 @@
                         </select>
                       @endif
                     </td>
-                    <td id="tujuan-{{ $siswa->id }}"
-                        data-naik="{{ $siswa->kelas ? $siswa->kelas->name . ' (tingkat ' . ($barisSiswa['tingkat'] + 1) . ')' : '' }}"
-                        data-tinggal="{{ $barisSiswa['kelas_asal'] }}"
-                        data-tetap="{{ $barisSiswa['kelas_asal'] }}"
-                        data-lulus="Tidak masuk tapel baru">
-                      {{ $barisSiswa['kelas_tujuan'] }}
+                    <td id="tujuan-{{ $siswa->id }}">
+                      @if ($jenis === 'tahun_baru' && $siswa->kelas_id)
+                        <select name="kelas_tujuan[{{ $siswa->id }}]"
+                                class="form-control form-control-sm kelas-tujuan {{ $barisSiswa['aksi'] === 'lulus' ? 'd-none' : '' }}"
+                                data-naik="{{ $barisSiswa['default_naik'] }}"
+                                data-tinggal="{{ $barisSiswa['default_tinggal'] }}"
+                                {{ $barisSiswa['aksi'] === 'lulus' ? 'disabled' : 'required' }}>
+                          <option value="">Pilih kelas</option>
+                          @foreach ($opsi_kelas as $opsi)
+                            <option value="{{ $opsi->id }}" {{ (int) $barisSiswa['kelas_tujuan_id'] === (int) $opsi->id ? 'selected' : '' }}>
+                              {{ $opsi->name }} (tingkat {{ optional($opsi->tingkat)->angka }})
+                            </option>
+                          @endforeach
+                        </select>
+                        <span class="tujuan-teks {{ $barisSiswa['aksi'] === 'lulus' ? '' : 'd-none' }}">Tidak masuk tapel baru</span>
+                      @else
+                        {{ $barisSiswa['kelas_tujuan'] }}
+                      @endif
                     </td>
                   </tr>
                 @endforeach
@@ -80,7 +92,19 @@
 <script>
   $('.aksi-siswa').on('change', function () {
     var tujuan = $('#tujuan-' + $(this).data('id'));
-    tujuan.text(tujuan.data($(this).val()));
+    var pilih = tujuan.find('select');
+    var teks = tujuan.find('.tujuan-teks');
+    if (!pilih.length) {
+      return;
+    }
+    if ($(this).val() === 'lulus') {
+      pilih.addClass('d-none').prop('disabled', true).prop('required', false);
+      teks.removeClass('d-none');
+      return;
+    }
+    pilih.removeClass('d-none').prop('disabled', false).prop('required', true);
+    teks.addClass('d-none');
+    pilih.val(pilih.data($(this).val()) || '');
   });
 </script>
 @endsection
