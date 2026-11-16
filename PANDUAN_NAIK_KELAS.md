@@ -17,8 +17,8 @@ Sebelum tahun pelajaran baru, wali kelas mengisi catatan **naik / tinggal / lulu
 
 ## Langkah admin
 
-1. Buka pratinjau. Periksa nama, kelas sekarang, dan kelas tujuan.
-2. Untuk tahun baru: ubah penempatan bila perlu, lalu pilih **kelas tujuan** dari kelas yang sudah ada di tahun ini. Tiap siswa boleh berbeda. Default-nya rombel yang sama di tingkat tujuan, jika kelas itu ada. Jika belum ada, daftar tetap bisa dipilih; simpan ditolak bila siswa yang naik atau tinggal belum punya tujuan.
+1. Buka pratinjau. Siswa dikelompokkan per kelas.
+2. Untuk tahun baru: ubah penempatan bila perlu, lalu pilih **kelas tujuan** dari kelas yang sudah ada di tahun ini. Dropdown pada baris kelas mengisi semua siswa di kelas itu yang tidak lulus. Dropdown pada baris siswa tetap bisa diubah satu per satu. Default-nya rombel yang sama di tingkat tujuan, jika kelas itu ada. Jika belum ada, daftar tetap bisa dipilih; simpan ditolak bila siswa yang naik atau tinggal belum punya tujuan.
    - Kelas biasa: **Naik tingkat** atau **Tinggal di tingkat ini**.
    - Kelas 6, 9, dan 12: **Lulus, nonaktif** atau **Tinggal / tidak lulus**.
 3. Klik **Siapkan dan aktifkan**. Tahun baru langsung menjadi tahun aktif. Proses ini tidak bisa diulang untuk tujuan yang sama.
