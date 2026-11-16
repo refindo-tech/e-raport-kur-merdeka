@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 
 class EkskulController extends Controller
@@ -66,7 +67,7 @@ class EkskulController extends Controller
   public function store(Request $request)
   {
     $validasi = Validator::make($request->all(),[
-      'name' => 'required|unique:ekskuls',
+      'name' => ['required', Rule::unique('ekskuls')->where(fn ($q) => $q->where('tapel_id', $request->tapel_id))],
       'tapel_id' => 'required|exists:tapels,id',
       'guru_id' => 'nullable|exists:gurus,id',
     ]);
@@ -123,7 +124,7 @@ class EkskulController extends Controller
   public function update(Request $request, Ekskul $ekskul)
   {
     $validasi = Validator::make($request->all(),[
-      'name' => 'required|unique:ekskuls,name,' . $ekskul->id,
+      'name' => ['required', Rule::unique('ekskuls')->where(fn ($q) => $q->where('tapel_id', $request->tapel_id))->ignore($ekskul->id)],
       'tapel_id' => 'required|exists:tapels,id',
       'guru_id' => 'nullable|exists:gurus,id',
     ]);

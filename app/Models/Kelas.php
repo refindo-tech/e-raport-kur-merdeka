@@ -26,7 +26,15 @@ class Kelas extends Model
       return $this->hasMany(Siswa::class);
     }
 
+    public function riwayatKelas(){
+      return $this->hasMany(RiwayatKelas::class);
+    }
+
     public static function siswaAktifKelasCount($id){
+      $riwayat = RiwayatKelas::where('kelas_id', $id)->pluck('siswa_id');
+      if ($riwayat->isNotEmpty()) {
+        return Siswa::whereIn('id', $riwayat)->whereHas('user', fn($q)=> $q->where('is_aktif', true))->count();
+      }
       return Siswa::where('kelas_id', $id)->whereHas('user', fn($q)=> $q->where('is_aktif', true))->count();
     }
 

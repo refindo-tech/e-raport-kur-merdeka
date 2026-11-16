@@ -27,6 +27,7 @@
           </div> --}}
           <!-- /.card-header -->
           <div class="card-body">
+            <a href="{{ route('tapel.naik') }}" class="btn btn-primary btn-sm mb-3">Siapkan semester berikutnya</a>
             @if ($tapel->count() < 1)
               Data masih kosong!
             @else
@@ -37,6 +38,7 @@
                       <th scope="col">No.</th>
                       <th scope="col">Tahun Pelajaran</th>
                       <th scope="col">Semester</th>
+                      <th scope="col">Status</th>
                       <th scope="col">Tempat Pembagian Raport</th>
                       <th scope="col">Tanggal Pembagian Raport</th>
                       <th scope="col">Tanggal Identital Rapor</th>
@@ -49,6 +51,7 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $item->tahun_pelajaran }}</td>
                         <td>{{ $item->semester() }}</td>
+                        <td>{{ $item->is_aktif ? 'Aktif' : 'Arsip' }}</td>
                         <td>{{ $item->tempat ?? '-'}}</td>
                         <td>{{ $item->tanggal() }}</td>
                         <td>{{ $item->tanggalIdentitalRapor() }}</td>

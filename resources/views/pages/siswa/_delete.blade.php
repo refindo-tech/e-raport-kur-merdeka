@@ -10,7 +10,7 @@
           <div class="modal-body">
             Data Siswa:
             <p class="text-primary fw-bold" id="delete-siswa-name"></p>
-            Apakah anda yakin data tersebut akan dihapus?
+            Apakah anda yakin data tersebut akan dihapus? Menghapus siswa juga menghapus akun dan seluruh nilai serta rapornya, termasuk rapor tapel lama.
           </div>
           <div class="modal-footer justify-content-between">
             <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Batal</button>

@@ -31,7 +31,7 @@
           <div class="modal-footer justify-content-between">
             <div class="form-check">
               <input type="checkbox" class="form-check-input" id="store-confirm" required checked>
-              <label class="form-check-label" for="store-confirm">Saya yakin sudah memilih dengan benar</label>
+              <label class="form-check-label" for="store-confirm">Saya yakin. Menghapus siswa juga menghapus akun, nilai, dan rapor tapel lama.</label>
             </div>
             <button type="submit" class="btn btn-danger" id="destroy-many-button">Hapus</button>
           </div>

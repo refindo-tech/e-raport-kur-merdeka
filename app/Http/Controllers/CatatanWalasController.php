@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CatatanWalas;
 use App\Models\Kelas;
+use App\Models\RiwayatKelas;
 use App\Models\Siswa;
 use App\Models\Tingkat;
 use Illuminate\Http\Request;
@@ -78,14 +79,18 @@ class CatatanWalasController extends Controller
    */
   public function show(Request $request, $id)
   {
+      $kelas = Kelas::with('tingkat')->findOrFail($id);
       $user = Auth::user();
-      if (!($user->isWaliKelas() && ($user->guru->id == Kelas::find($id)->guru_id ))) {
+      if (!($user->isWaliKelas() && ($user->guru->id == $kelas->guru_id ))) {
         abort(403);
       }
 
-      $data = Siswa::whereHas('user', fn($q) => $q->where('is_aktif', true))->where('kelas_id', $id)->orderBy('name', 'ASC');
-
-      $kelas = Kelas::whereId($id)->first();
+      $ids = RiwayatKelas::where('kelas_id', $kelas->id)->pluck('siswa_id');
+      $data = Siswa::whereHas('user', fn($q) => $q->where('is_aktif', true))->orderBy('name', 'ASC');
+      $data = $ids->isNotEmpty() ? $data->whereIn('id', $ids) : $data->where('kelas_id', $id);
+      $denganCatatan = function ($q) use ($kelas) {
+          $q->where('tapel_id', $kelas->tapel_id);
+      };
       if ($kelas->tingkat->angka == 6 || $kelas->tingkat->angka == 9 || $kelas->tingkat->angka == 12) {
         $naikTingkat = [
           [ 'key' => 'LULUS', 'value' => '1', ],
@@ -100,14 +105,14 @@ class CatatanWalasController extends Controller
 
       if ($request->ajax()) {
         if ($request->semester == 1) {
-          return DataTables::of($data->with('catatanWalas', 'kelas'))->addIndexColumn()
+          return DataTables::of($data->with(['catatanWalas' => $denganCatatan, 'kelas']))->addIndexColumn()
             ->editColumn('catatanwalas.catatan', function($data){
               $catatan = $data->catatanWalas ? $data->catatanWalas->catatan : null;
               return view('pages.catatanwalas._catatan')->with(['catatan' => $catatan, 'id' => $data->id]);
             })
             ->make(true);
         } else {
-          return DataTables::of($data->with('catatanWalas', 'kelas'))->addIndexColumn()
+          return DataTables::of($data->with(['catatanWalas' => $denganCatatan, 'kelas']))->addIndexColumn()
             ->editColumn('catatanwalas.catatan', function($data){
               $catatan = $data->catatanWalas ? $data->catatanWalas->catatan : null;
               return view('pages.catatanwalas._catatan')->with(['catatan' => $catatan, 'id' => $data->id]);
@@ -148,20 +153,21 @@ class CatatanWalasController extends Controller
    */
   public function update(Request $request, $id)
   {
+    $kelas = Kelas::findOrFail($id);
     try {
       DB::beginTransaction();
         foreach ($request->siswa_id as $i => $siswaId) {
-          $siswa = Siswa::find($siswaId);
-          if ($siswa->catatanWalas) {
-            $siswa->catatanWalas->update([
-              'catatan' => $request->catatan[$i],
-              'naik_tingkat' => $request->naik_tingkat[$i] ?? null,
-            ]);
+          $catatan = CatatanWalas::where('siswa_id', $siswaId)->where('tapel_id', $kelas->tapel_id)->first();
+          $nilai = [
+            'catatan' => $request->catatan[$i],
+            'naik_tingkat' => $request->naik_tingkat[$i] ?? null,
+          ];
+          if ($catatan) {
+            $catatan->update($nilai);
           } else {
-            CatatanWalas::create([
+            CatatanWalas::create($nilai + [
               'siswa_id' => $siswaId,
-              'catatan' => $request->catatan[$i],
-              'naik_tingkat' => $request->naik_tingkat[$i] ?? null,
+              'tapel_id' => $kelas->tapel_id,
             ]);
           }
         }

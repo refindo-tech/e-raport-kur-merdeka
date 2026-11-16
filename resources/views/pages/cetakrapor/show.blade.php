@@ -116,12 +116,12 @@
 
     // semester
     $('body').on('click', '.semester-button', function(){
-      window.open('/cetakrapor/semester/' + $(this).data('id') + '/' + $('#paper-select').val(), '_blank');
+      window.open('/cetakrapor/semester/' + $(this).data('id') + '/' + $('#paper-select').val() + '?kelas={{ $kelas->id }}', '_blank');
     });
 
     // p5
     $('body').on('click', '.p5-button', function(){
-      window.open('/cetakrapor/p5/' + $(this).data('id') + '/' + $('#paper-select').val(), '_blank');
+      window.open('/cetakrapor/p5/' + $(this).data('id') + '/' + $('#paper-select').val() + '?kelas={{ $kelas->id }}', '_blank');
     });
 
   })

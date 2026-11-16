@@ -37,6 +37,15 @@ class Siswa extends Model
         }
     }
 
+    protected static function booted()
+    {
+        static::saved(function (Siswa $siswa) {
+            if ($siswa->wasRecentlyCreated || $siswa->wasChanged('kelas_id')) {
+                RiwayatKelas::catat($siswa);
+            }
+        });
+    }
+
     public function user(){
       return $this->belongsTo(User::class);
     }

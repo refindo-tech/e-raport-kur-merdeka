@@ -14,8 +14,8 @@ class Guru extends Model
       return $this->belongsTo(User::class);
     }
 
-    public function kelas(){ // Wali Kelas
-      return $this->hasOne(Kelas::class);
+    public function kelas(){ // Wali Kelas pada tapel terbaru
+      return $this->hasOne(Kelas::class)->latestOfMany('tapel_id');
     }
 
     public function ekskul(){ // Pembina Ekskul

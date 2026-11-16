@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 
 class KelasController extends Controller
@@ -74,12 +75,12 @@ class KelasController extends Controller
   public function store(Request $request)
   {
     $validasi = Validator::make($request->all(),[
-      'name' => 'required|unique:kelas',
+      'name' => ['required', Rule::unique('kelas')->where(fn ($q) => $q->where('tapel_id', $request->tapel_id)->where('tingkat_id', $request->tingkat_id))],
       'guru_id' => ['nullable',
                     'exists:gurus,id',
                     function ($attribute, $value, $fail) use ($request) {
-                      $isDuplicate = Kelas::where('guru_id', $request->guru_id)->exists();
-                      if ($isDuplicate) $fail('Sudah menjadi Wali Kelas, pilih yang lain');
+                      $isDuplicate = Kelas::where('guru_id', $request->guru_id)->where('tapel_id', $request->tapel_id)->exists();
+                      if ($isDuplicate) $fail('Sudah menjadi Wali Kelas pada tahun pelajaran ini, pilih yang lain');
                     },
                   ],
       'tapel_id' => 'required:tapels,id',
@@ -140,15 +141,15 @@ class KelasController extends Controller
   public function update(Request $request, Kelas $kelas)
   {
     $validasi = Validator::make($request->all(),[
-      'name' => 'required|unique:kelas,name,' . $kelas->id,
+      'name' => ['required', Rule::unique('kelas')->where(fn ($q) => $q->where('tapel_id', $request->tapel_id)->where('tingkat_id', $request->tingkat_id))->ignore($kelas->id)],
       'guru_id' => ['nullable',
                     'exists:gurus,id',
                     function ($attribute, $value, $fail) use ($request, $kelas) {
                       if ($request->guru_id == $kelas->guru_id) {
                           return; // Pengecualian, tidak perlu melakukan validasi
                       }
-                      $isDuplicate = Kelas::where('guru_id', $request->guru_id)->exists();
-                      if ($isDuplicate) $fail('Sudah menjadi Wali Kelas, pilih yang lain');
+                      $isDuplicate = Kelas::where('guru_id', $request->guru_id)->where('tapel_id', $request->tapel_id)->exists();
+                      if ($isDuplicate) $fail('Sudah menjadi Wali Kelas pada tahun pelajaran ini, pilih yang lain');
                     },
                   ],
       'tapel_id' => 'required:tapels,id',
@@ -164,7 +165,7 @@ class KelasController extends Controller
           $data = [
             'name' => $request->name,
             'guru_id' => $request->guru_id,
-            'tape_id' => $request->tapel_id,
+            'tapel_id' => $request->tapel_id,
             'tingkat_id' => $request->tingkat_id,
           ];
           $kelas->update($data);

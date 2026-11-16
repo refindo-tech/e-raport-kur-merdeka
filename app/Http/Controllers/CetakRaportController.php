@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\AnggotaEkskul;
+use App\Models\AnggotaKelompok;
+use App\Models\RiwayatKelas;
 use App\Models\CapaianAkhir;
 use App\Models\CapaianProjek;
 use App\Models\CatatanWalas;
@@ -41,13 +43,13 @@ class CetakRaportController extends Controller
 
         if ($request->tingkat_id) $data->where('tingkat_id', $request->tingkat_id);
 
-        return DataTables::of($data->with('tingkat:id,angka','siswa:id,kelas_id')->withCount('siswa'))->addIndexColumn()
+        return DataTables::of($data->with('tingkat:id,angka')->withCount(['siswa', 'riwayatKelas']))->addIndexColumn()
                                     ->editColumn('tingkat.angka', function($data){
                                       return $data->tingkat->angka;})
                                     ->editColumn('guru.name', function($data){
                                       return $data->wali_kelas();})
                                     ->editColumn('siswa.count', function($data){
-                                      return $data->siswa_count;})
+                                      return $data->riwayat_kelas_count ?: $data->siswa_count;})
                                     ->addColumn('aksi', function($data){
                                         return view('pages.cetakrapor._aksi')->with('kelasId', $data->id);})
                                     ->make(true);
@@ -63,11 +65,11 @@ class CetakRaportController extends Controller
       $kelas = $cetakrapor;
 
       if (Auth::user()->isAdmin()) {
-        $data = Siswa::where('kelas_id', $kelas->id)->whereHas('user', fn($q) => $q->where('is_aktif', true))->orderBy('name', 'asc');
-      } elseif (Auth::user()->isWaliKelas() && ($kelas->id == Auth::user()->guru->kelas->id)){
-        $data = Siswa::where('kelas_id', $kelas->id)->whereHas('user', fn($q) => $q->where('is_aktif', true))->orderBy('name', 'asc');
-      } elseif (Auth::user()->isSiswa() && ($kelas->id == Auth::user()->siswa->kelas_id)) {
-        $data = Siswa::where('id', Auth::user()->siswa->id)->whereHas('user', fn($q) => $q->where('is_aktif', true));
+        $data = $this->siswaDiKelas($kelas);
+      } elseif (Auth::user()->isWaliKelas() && Auth::user()->guru && ($kelas->guru_id == Auth::user()->guru->id)){
+        $data = $this->siswaDiKelas($kelas);
+      } elseif (Auth::user()->isSiswa() && RiwayatKelas::where('siswa_id', Auth::user()->siswa->id)->where('kelas_id', $kelas->id)->exists()) {
+        $data = Siswa::where('id', Auth::user()->siswa->id);
       } else {
         abort(403);
       }
@@ -124,20 +126,20 @@ class CetakRaportController extends Controller
       }
     }
 
-    public function p5(Siswa $siswa, $paper) {
-      if
-      (
-        !Auth::user()->isAdmin() &&
-        !(Auth::user()->isWaliKelas() && ($siswa->kelas_id == Auth::user()->guru->kelas->id)) &&
-        !(Auth::user()->isSiswa() && ($siswa->id == Auth::user()->siswa->id))
-      )
-      {
+    public function p5(Request $request, Siswa $siswa, $paper) {
+      $kelas = $this->kelasUntukCetak($request, $siswa);
+      if (!$this->bolehMencetak($siswa, $kelas)) {
         abort(403);
       }
+      $siswa->setRelation('kelas', $kelas);
 
-      if (!$siswa->anggotaKelompok) {
-        return back()->withWarning($siswa->name . ' belum memiliki Projek!');
+      $anggota = AnggotaKelompok::where('siswa_id', $siswa->id)
+        ->whereHas('kelompokProjek', fn ($q) => $q->where('kelas_id', $kelas->id))
+        ->first();
+      if (!$anggota) {
+        return back()->withWarning($siswa->name . ' belum memiliki Projek pada kelas ini!');
       }
+      $siswa->setRelation('anggotaKelompok', $anggota);
 
       $projekId = $siswa->anggotaKelompok->kelompokProjek->projekPilihanKelompok->pluck('projek_id');
       $projek = Projek::whereIn('id', $projekId)->get();
@@ -179,17 +181,13 @@ class CetakRaportController extends Controller
       }
     }
 
-    public function semester(Siswa $siswa, $paper) {
-      if
-      (
-        !Auth::user()->isAdmin() &&
-        !(Auth::user()->isWaliKelas() && ($siswa->kelas_id == Auth::user()->guru->kelas->id)) &&
-        !(Auth::user()->isSiswa() && ($siswa->id == Auth::user()->siswa->id))
-      )
-      {
+    public function semester(Request $request, Siswa $siswa, $paper) {
+      $kelas = $this->kelasUntukCetak($request, $siswa);
+      if (!$this->bolehMencetak($siswa, $kelas)) {
         abort(403);
       }
-      $kelMapelId = $siswa->kelas->pembelajaran->pluck('mapel.kelompok_mapel_id')->unique();
+      $siswa->setRelation('kelas', $kelas);
+      $kelMapelId = $kelas->pembelajaran->pluck('mapel.kelompok_mapel_id')->unique();
       
       // Sanitize filename - remove newlines and invalid characters for headers
       $fileName = 'RAPOR HASIL BELAJAR - ' . $siswa->name . ' ' . $siswa->kelas->name . ' ' . $siswa->nis . '.pdf';
@@ -202,13 +200,13 @@ class CetakRaportController extends Controller
           'siswa' => $siswa,
           'sekolah' => Sekolah::first(),
           'kelompokmapel' => KelompokMapel::whereIn('id', $kelMapelId)->get(),
-          'pembelajaran' => Pembelajaran::where('kelas_id', $siswa->kelas_id)->get(),
-          'nilaiakhir' => NilaiAkhir::where('siswa_id', $siswa->id)->whereIn('pembelajaran_id', $siswa->kelas->pembelajaran->pluck('id')),
-          'anggotaEkskul' => AnggotaEkskul::where('siswa_id', $siswa->id)->get(),
-          'ketidakhadiran' => Ketidakhadiran::where('siswa_id', $siswa->id)->get(),
-          'catatanwalas' => CatatanWalas::where('siswa_id', $siswa->id)->get(),
+          'pembelajaran' => Pembelajaran::where('kelas_id', $kelas->id)->get(),
+          'nilaiakhir' => NilaiAkhir::where('siswa_id', $siswa->id)->whereIn('pembelajaran_id', $kelas->pembelajaran->pluck('id')),
+          'anggotaEkskul' => AnggotaEkskul::where('siswa_id', $siswa->id)->whereHas('ekskul', fn ($q) => $q->where('tapel_id', $kelas->tapel_id))->get(),
+          'ketidakhadiran' => Ketidakhadiran::where('siswa_id', $siswa->id)->where('tapel_id', $kelas->tapel_id)->get(),
+          'catatanwalas' => CatatanWalas::where('siswa_id', $siswa->id)->where('tapel_id', $kelas->tapel_id)->get(),
           'studentKokurikuler' => StudentKokurikulerDescription::where('student_id', $siswa->id)
-            ->where('tapel_id', $siswa->kelas->tapel_id)
+            ->where('tapel_id', $kelas->tapel_id)
             ->first(),
         ])->setPaper($paper, 'Potrait')->stream($fileName);
       } catch (\Exception $e) {
@@ -221,5 +219,45 @@ class CetakRaportController extends Controller
         ]);
         throw $e;
       }
+    }
+
+    private function kelasUntukCetak(Request $request, Siswa $siswa): Kelas
+    {
+        if ($request->filled('kelas')) {
+            $kelas = Kelas::findOrFail($request->kelas);
+            $punyaRiwayat = RiwayatKelas::where('siswa_id', $siswa->id)->where('kelas_id', $kelas->id)->exists();
+            if (!$punyaRiwayat && $siswa->kelas_id != $kelas->id) {
+                abort(404);
+            }
+
+            return $kelas;
+        }
+
+        return $siswa->kelas;
+    }
+
+    private function bolehMencetak(Siswa $siswa, Kelas $kelas): bool
+    {
+        $user = Auth::user();
+        if ($user->isAdmin()) {
+            return true;
+        }
+        if ($user->isWaliKelas() && $user->guru && $kelas->guru_id == $user->guru->id) {
+            return true;
+        }
+
+        return $user->isSiswa() && $user->siswa && $user->siswa->id == $siswa->id;
+    }
+
+    private function siswaDiKelas(Kelas $kelas)
+    {
+        $ids = RiwayatKelas::where('kelas_id', $kelas->id)->pluck('siswa_id');
+        $data = Siswa::orderBy('name', 'asc');
+        $data = $ids->isNotEmpty() ? $data->whereIn('id', $ids) : $data->where('kelas_id', $kelas->id);
+        if ($kelas->tapel && $kelas->tapel->is_aktif) {
+            $data->whereHas('user', fn ($q) => $q->where('is_aktif', true));
+        }
+
+        return $data;
     }
 }

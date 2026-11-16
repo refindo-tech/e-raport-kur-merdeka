@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Guru;
 use App\Models\Kelas;
 use App\Models\Ketidakhadiran;
+use App\Models\RiwayatKelas;
 use App\Models\Siswa;
 use App\Models\Tapel;
 use App\Models\Tingkat;
@@ -82,15 +83,18 @@ class KetidakhadiranController extends Controller
      */
     public function show(Request $request, $id)
     {
+      $kelas = Kelas::findOrFail($id);
       $user = Auth::user();
-      if (!($user->isWaliKelas() && ($user->guru->id == Kelas::find($id)->guru_id ))) {
+      if (!($user->isWaliKelas() && ($user->guru->id == $kelas->guru_id ))) {
         abort(403);
       }
 
-        $data = Siswa::whereHas('user', fn($q) => $q->where('is_aktif', true))->where('kelas_id', $id)->orderBy('name', 'ASC');
+        $data = $this->siswaKelas($kelas);
 
         if ($request->ajax()) {
-          return DataTables::of($data->with('ketidakhadiran', 'kelas'))->addIndexColumn()
+          return DataTables::of($data->with(['ketidakhadiran' => function ($q) use ($kelas) {
+                                        $q->where('tapel_id', $kelas->tapel_id);
+                                      }, 'kelas']))->addIndexColumn()
                                       ->editColumn('ketidakhadiran.sakit', function($data){
                                         $sakit = $data->ketidakhadiran ? $data->ketidakhadiran->sakit : null;
                                         return view('pages.ketidakhadiran._sakit')->with(['sakit' => $sakit, 'id' => $data->id]);
@@ -132,22 +136,22 @@ class KetidakhadiranController extends Controller
      */
     public function update(Request $request, $id)
     {
+      $kelas = Kelas::findOrFail($id);
       try {
         DB::beginTransaction();
           foreach ($request->siswa_id as $i => $siswaId) {
-            $siswa = Siswa::find($siswaId);
-            if ($siswa->ketidakhadiran) {
-              $siswa->ketidakhadiran->update([
-                'sakit' => $request->sakit[$i] == 0 ? null : $request->sakit[$i],
-                'izin' => $request->izin[$i] == 0 ? null : $request->izin[$i],
-                'tk' => $request->tk[$i] == 0 ? null : $request->tk[$i],
-              ]);
+            $absen = Ketidakhadiran::where('siswa_id', $siswaId)->where('tapel_id', $kelas->tapel_id)->first();
+            $nilai = [
+              'sakit' => $request->sakit[$i] == 0 ? null : $request->sakit[$i],
+              'izin' => $request->izin[$i] == 0 ? null : $request->izin[$i],
+              'tk' => $request->tk[$i] == 0 ? null : $request->tk[$i],
+            ];
+            if ($absen) {
+              $absen->update($nilai);
             } else {
-              Ketidakhadiran::create([
+              Ketidakhadiran::create($nilai + [
                 'siswa_id' => $siswaId,
-                'sakit' => $request->sakit[$i] == 0 ? null : $request->sakit[$i],
-                'izin' => $request->izin[$i] == 0 ? null : $request->izin[$i],
-                'tk' => $request->tk[$i] == 0 ? null : $request->tk[$i],
+                'tapel_id' => $kelas->tapel_id,
               ]);
             }
           }
@@ -158,6 +162,17 @@ class KetidakhadiranController extends Controller
         return response()->json(['failed' => 'Terjadi kesalahan!']);
       }
 
+    }
+
+    private function siswaKelas(Kelas $kelas)
+    {
+        $ids = RiwayatKelas::where('kelas_id', $kelas->id)->pluck('siswa_id');
+        $data = Siswa::whereHas('user', fn($q) => $q->where('is_aktif', true))->orderBy('name', 'ASC');
+        if ($ids->isNotEmpty()) {
+            return $data->whereIn('id', $ids);
+        }
+
+        return $data->where('kelas_id', $kelas->id);
     }
 
     /**

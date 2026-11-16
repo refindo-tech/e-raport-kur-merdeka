@@ -32,6 +32,7 @@ use App\Http\Controllers\SekolahController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\SubElemenController;
 use App\Http\Controllers\TapelController;
+use App\Http\Controllers\NaikTapelController;
 use App\Http\Controllers\TujuanPembelajaranController;
 use App\Http\Controllers\UserController;
 use App\Models\CapaianAkhir;
@@ -84,6 +85,9 @@ Route::middleware('auth')->group(function(){
   Route::put('/sekolah/updatedata', [SekolahController::class, 'updateData'])->name('sekolah.updatedata')->middleware('can:admin');
   Route::put('/sekolah/updatelogo', [SekolahController::class, 'updateLogo'])->name('sekolah.updatelogo')->middleware('can:admin');
 
+  Route::get('/tapel/naik-kelas', [NaikTapelController::class, 'create'])->name('tapel.naik')->middleware('can:admin');
+  Route::post('/tapel/naik-kelas/pratinjau', [NaikTapelController::class, 'preview'])->name('tapel.naik.preview')->middleware('can:admin');
+  Route::post('/tapel/naik-kelas', [NaikTapelController::class, 'store'])->name('tapel.naik.store')->middleware('can:admin');
   Route::resource('/tapel', TapelController::class)->middleware('can:admin');
   Route::get('/kelas/{id}/name', [HelperController::class, 'getKelasName'])->name('get.kelas.name');
   Route::resource('/kelas', KelasController::class)->parameters(['kelas' => 'kelas']);
